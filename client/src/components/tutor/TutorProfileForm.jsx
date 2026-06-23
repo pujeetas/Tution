@@ -1,0 +1,157 @@
+import { useState } from 'react';
+import Button from '../common/Button.jsx';
+import Input from '../common/Input.jsx';
+import { SUBJECTS, LEVELS, TEACHING_MODES } from '../../utils/constants.js';
+import { saveMyTutorProfile, getErrorMessage } from '../../services/api.js';
+
+const CheckboxGroup = ({ label, options, selected, onToggle }) => (
+  <fieldset>
+    <legend className="mb-2 text-sm font-medium text-gray-700">{label}</legend>
+    <div className="flex flex-wrap gap-2">
+      {options.map((option) => {
+        const checked = selected.includes(option);
+        return (
+          <button
+            type="button"
+            key={option}
+            onClick={() => onToggle(option)}
+            className={`rounded-full border px-3 py-1.5 text-sm transition-colors ${
+              checked
+                ? 'border-primary-600 bg-primary-600 text-white'
+                : 'border-gray-300 bg-white text-gray-600 hover:border-primary-400'
+            }`}
+          >
+            {option}
+          </button>
+        );
+      })}
+    </div>
+  </fieldset>
+);
+
+const TutorProfileForm = ({ profile, onSaved }) => {
+  const [form, setForm] = useState({
+    subjects: profile?.subjects || [],
+    levels: profile?.levels || [],
+    teachingMode: profile?.teachingMode || 'online',
+    hourlyRate: profile?.hourlyRate || '',
+    bio: profile?.bio || '',
+    yearsExperience: profile?.yearsExperience ?? '',
+  });
+  const [saving, setSaving] = useState(false);
+  const [error, setError] = useState('');
+  const [success, setSuccess] = useState('');
+
+  const toggleIn = (field) => (value) =>
+    setForm((prev) => ({
+      ...prev,
+      [field]: prev[field].includes(value)
+        ? prev[field].filter((v) => v !== value)
+        : [...prev[field], value],
+    }));
+
+  const handleChange = (e) => setForm({ ...form, [e.target.name]: e.target.value });
+
+  const handleSubmit = async (e) => {
+    e.preventDefault();
+    setError('');
+    setSuccess('');
+
+    if (form.subjects.length === 0) return setError('Select at least one subject');
+    if (form.levels.length === 0) return setError('Select at least one level');
+    if (!form.hourlyRate || Number(form.hourlyRate) < 1)
+      return setError('Enter a valid hourly rate');
+
+    setSaving(true);
+    try {
+      const res = await saveMyTutorProfile({
+        ...form,
+        hourlyRate: Number(form.hourlyRate),
+        yearsExperience: Number(form.yearsExperience) || 0,
+      });
+      setSuccess('Profile saved successfully');
+      onSaved?.(res.data.profile);
+    } catch (err) {
+      setError(getErrorMessage(err));
+    } finally {
+      setSaving(false);
+    }
+  };
+
+  return (
+    <form onSubmit={handleSubmit} className="space-y-5">
+      {error && (
+        <p className="rounded-lg bg-red-50 px-4 py-2 text-sm text-red-700">{error}</p>
+      )}
+      {success && (
+        <p className="rounded-lg bg-green-50 px-4 py-2 text-sm text-green-700">{success}</p>
+      )}
+
+      <CheckboxGroup
+        label="Subjects you teach"
+        options={SUBJECTS}
+        selected={form.subjects}
+        onToggle={toggleIn('subjects')}
+      />
+
+      <CheckboxGroup
+        label="Levels you teach"
+        options={LEVELS}
+        selected={form.levels}
+        onToggle={toggleIn('levels')}
+      />
+
+      <div className="grid gap-4 sm:grid-cols-3">
+        <Input
+          as="select"
+          label="Teaching mode"
+          name="teachingMode"
+          value={form.teachingMode}
+          onChange={handleChange}
+        >
+          {TEACHING_MODES.map((m) => (
+            <option key={m.value} value={m.value}>
+              {m.label}
+            </option>
+          ))}
+        </Input>
+        <Input
+          label="Hourly rate (SGD)"
+          name="hourlyRate"
+          type="number"
+          min="1"
+          step="1"
+          placeholder="e.g. 50"
+          value={form.hourlyRate}
+          onChange={handleChange}
+        />
+        <Input
+          label="Years of experience"
+          name="yearsExperience"
+          type="number"
+          min="0"
+          step="1"
+          placeholder="e.g. 5"
+          value={form.yearsExperience}
+          onChange={handleChange}
+        />
+      </div>
+
+      <Input
+        as="textarea"
+        label="Bio"
+        name="bio"
+        placeholder="Tell parents about your teaching style, qualifications and track record..."
+        value={form.bio}
+        onChange={handleChange}
+        maxLength={1000}
+      />
+
+      <Button type="submit" disabled={saving}>
+        {saving ? 'Saving...' : 'Save Profile'}
+      </Button>
+    </form>
+  );
+};
+
+export default TutorProfileForm;

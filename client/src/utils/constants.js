@@ -1,0 +1,45 @@
+export const SUBJECTS = [
+  'Math',
+  'English',
+  'Science',
+  'Chinese',
+  'Malay',
+  'Tamil',
+  'Physics',
+  'Chemistry',
+  'Biology',
+  'Economics',
+  'History',
+  'Geography',
+];
+
+export const LEVELS = ['PSLE', 'O-Levels', 'A-Levels'];
+
+export const CHILD_LEVELS = ['Primary', 'Secondary', 'JC'];
+
+export const TEACHING_MODES = [
+  { value: 'online', label: 'Online' },
+  { value: 'in-person', label: 'In-person' },
+  { value: 'both', label: 'Online & In-person' },
+];
+
+export const SESSION_MODES = [
+  { value: 'online', label: 'Online' },
+  { value: 'in-person', label: 'In-person' },
+];
+
+export const DURATIONS = [
+  { value: 1, label: '1 hour' },
+  { value: 1.5, label: '1.5 hours' },
+  { value: 2, label: '2 hours' },
+  { value: 3, label: '3 hours' },
+];
+
+export const BOOKING_STATUSES = ['Pending', 'Confirmed', 'Completed', 'Cancelled'];
+
+export const STATUS_COLORS = {
+  Pending: 'bg-yellow-100 text-yellow-800',
+  Confirmed: 'bg-blue-100 text-blue-800',
+  Completed: 'bg-green-100 text-green-800',
+  Cancelled: 'bg-gray-100 text-gray-600',
+};
