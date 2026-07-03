@@ -6,7 +6,7 @@ import { saveMyTutorProfile, getErrorMessage } from '../../services/api.js';
 
 const CheckboxGroup = ({ label, options, selected, onToggle }) => (
   <fieldset>
-    <legend className="mb-2 text-sm font-medium text-gray-700">{label}</legend>
+    <legend className="mb-2 text-sm font-medium text-gray-700 dark:text-gray-300">{label}</legend>
     <div className="flex flex-wrap gap-2">
       {options.map((option) => {
         const checked = selected.includes(option);
@@ -18,7 +18,7 @@ const CheckboxGroup = ({ label, options, selected, onToggle }) => (
             className={`rounded-full border px-3 py-1.5 text-sm transition-colors ${
               checked
                 ? 'border-primary-600 bg-primary-600 text-white'
-                : 'border-gray-300 bg-white text-gray-600 hover:border-primary-400'
+                : 'border-gray-300 bg-white text-gray-600 hover:border-primary-400 dark:border-gray-700 dark:bg-gray-800 dark:text-gray-300 dark:hover:border-primary-500'
             }`}
           >
             {option}
@@ -81,10 +81,14 @@ const TutorProfileForm = ({ profile, onSaved }) => {
   return (
     <form onSubmit={handleSubmit} className="space-y-5">
       {error && (
-        <p className="rounded-lg bg-red-50 px-4 py-2 text-sm text-red-700">{error}</p>
+        <p className="rounded-lg bg-red-50 px-4 py-2 text-sm text-red-700 dark:bg-red-900/20 dark:text-red-400">
+          {error}
+        </p>
       )}
       {success && (
-        <p className="rounded-lg bg-green-50 px-4 py-2 text-sm text-green-700">{success}</p>
+        <p className="rounded-lg bg-green-50 px-4 py-2 text-sm text-green-700 dark:bg-green-900/20 dark:text-green-400">
+          {success}
+        </p>
       )}
 
       <CheckboxGroup

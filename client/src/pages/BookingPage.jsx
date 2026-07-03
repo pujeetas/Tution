@@ -19,20 +19,30 @@ const BookingPage = () => {
 
   if (loading) return <LoadingSpinner message="Loading..." />;
   if (error)
-    return <p className="rounded-lg bg-red-50 px-4 py-3 text-sm text-red-700">{error}</p>;
+    return (
+      <p className="rounded-lg bg-red-50 px-4 py-3 text-sm text-red-700 dark:bg-red-900/20 dark:text-red-400">
+        {error}
+      </p>
+    );
   if (!tutor) return null;
 
   return (
     <div className="mx-auto max-w-2xl space-y-6">
-      <Link to={`/tutors/${tutor._id}`} className="text-sm text-primary-600 hover:underline">
+      <Link
+        to={`/tutors/${tutor._id}`}
+        className="text-sm text-primary-600 hover:underline dark:text-primary-400"
+      >
         ← Back to {tutor.user?.name}'s profile
       </Link>
 
-      <div className="rounded-xl border border-gray-200 bg-white p-8 shadow-sm">
-        <h1 className="text-2xl font-bold text-gray-900">Book a Session</h1>
-        <p className="mt-1 text-sm text-gray-500">
-          with <span className="font-medium text-gray-700">{tutor.user?.name}</span> · S$
-          {tutor.hourlyRate}/hour
+      <div className="rounded-xl border border-gray-200 bg-white p-8 shadow-sm dark:border-gray-800 dark:bg-gray-900">
+        <h1 className="text-2xl font-bold text-gray-900 dark:text-gray-100">Book a Session</h1>
+        <p className="mt-1 text-sm text-gray-500 dark:text-gray-400">
+          with{' '}
+          <span className="font-medium text-gray-700 dark:text-gray-300">
+            {tutor.user?.name}
+          </span>{' '}
+          · S${tutor.hourlyRate}/hour
         </p>
 
         <div className="mt-6">

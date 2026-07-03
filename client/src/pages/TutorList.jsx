@@ -35,14 +35,14 @@ const TutorList = () => {
   return (
     <div className="space-y-6">
       <div>
-        <h1 className="text-2xl font-bold text-gray-900">Find Tutors</h1>
-        <p className="text-sm text-gray-500">
+        <h1 className="text-2xl font-bold text-gray-900 dark:text-gray-100">Find Tutors</h1>
+        <p className="text-sm text-gray-500 dark:text-gray-400">
           Browse qualified tutors across Singapore and book a session
         </p>
       </div>
 
       {/* Filters */}
-      <div className="rounded-xl border border-gray-200 bg-white p-4 shadow-sm">
+      <div className="rounded-xl border border-gray-200 bg-white p-4 shadow-sm dark:border-gray-800 dark:bg-gray-900">
         <div className="grid gap-3 sm:grid-cols-2 lg:grid-cols-5">
           <Input
             as="select"
@@ -113,14 +113,16 @@ const TutorList = () => {
       {loading ? (
         <LoadingSpinner message="Finding tutors..." />
       ) : error ? (
-        <p className="rounded-lg bg-red-50 px-4 py-3 text-sm text-red-700">{error}</p>
+        <p className="rounded-lg bg-red-50 px-4 py-3 text-sm text-red-700 dark:bg-red-900/20 dark:text-red-400">
+          {error}
+        </p>
       ) : tutors.length === 0 ? (
-        <p className="rounded-xl border border-dashed border-gray-300 bg-white px-4 py-12 text-center text-sm text-gray-500">
+        <p className="rounded-xl border border-dashed border-gray-300 bg-white px-4 py-12 text-center text-sm text-gray-500 dark:border-gray-700 dark:bg-gray-900 dark:text-gray-400">
           No tutors match your filters. Try widening your search.
         </p>
       ) : (
         <>
-          <p className="text-sm text-gray-500">
+          <p className="text-sm text-gray-500 dark:text-gray-400">
             {tutors.length} {tutors.length === 1 ? 'tutor' : 'tutors'} found
           </p>
           <div className="grid gap-5 sm:grid-cols-2 lg:grid-cols-3">

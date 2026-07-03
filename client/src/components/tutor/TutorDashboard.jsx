@@ -46,31 +46,31 @@ const TutorDashboard = () => {
   return (
     <div className="space-y-6">
       <div>
-        <h1 className="text-2xl font-bold text-gray-900">Tutor Dashboard</h1>
-        <p className="text-sm text-gray-500">Welcome back, {user.name}</p>
+        <h1 className="text-2xl font-bold text-gray-900 dark:text-gray-100">Tutor Dashboard</h1>
+        <p className="text-sm text-gray-500 dark:text-gray-400">Welcome back, {user.name}</p>
       </div>
 
       {needsProfile && (
-        <p className="rounded-lg bg-yellow-50 px-4 py-3 text-sm text-yellow-800">
+        <p className="rounded-lg bg-yellow-50 px-4 py-3 text-sm text-yellow-800 dark:bg-yellow-900/20 dark:text-yellow-400">
           Your profile is not set up yet — parents can't find you until it is. Fill in the
           "My Profile" tab to appear in search results.
         </p>
       )}
 
-      <div className="flex gap-1 border-b border-gray-200">
+      <div className="flex gap-1 border-b border-gray-200 dark:border-gray-800">
         {TABS.map((t) => (
           <button
             key={t}
             onClick={() => setTab(t)}
             className={`px-4 py-2 text-sm font-medium transition-colors ${
               tab === t
-                ? 'border-b-2 border-primary-600 text-primary-600'
-                : 'text-gray-500 hover:text-gray-800'
+                ? 'border-b-2 border-primary-600 text-primary-600 dark:text-primary-400'
+                : 'text-gray-500 hover:text-gray-800 dark:text-gray-400 dark:hover:text-gray-200'
             }`}
           >
             {t}
             {t === 'Bookings' && pending.length > 0 && (
-              <span className="ml-1.5 rounded-full bg-yellow-100 px-2 py-0.5 text-xs font-semibold text-yellow-800">
+              <span className="ml-1.5 rounded-full bg-yellow-100 px-2 py-0.5 text-xs font-semibold text-yellow-800 dark:bg-yellow-900/30 dark:text-yellow-400">
                 {pending.length}
               </span>
             )}
@@ -84,18 +84,18 @@ const TutorDashboard = () => {
         ) : (
           <div className="space-y-8">
             {bookingsError && (
-              <p className="rounded-lg bg-red-50 px-4 py-3 text-sm text-red-700">
+              <p className="rounded-lg bg-red-50 px-4 py-3 text-sm text-red-700 dark:bg-red-900/20 dark:text-red-400">
                 {bookingsError}
               </p>
             )}
             {actionError && (
-              <p className="rounded-lg bg-red-50 px-4 py-3 text-sm text-red-700">
+              <p className="rounded-lg bg-red-50 px-4 py-3 text-sm text-red-700 dark:bg-red-900/20 dark:text-red-400">
                 {actionError}
               </p>
             )}
 
             {bookings.length === 0 && (
-              <p className="rounded-xl border border-dashed border-gray-300 bg-white px-4 py-8 text-center text-sm text-gray-500">
+              <p className="rounded-xl border border-dashed border-gray-300 bg-white px-4 py-8 text-center text-sm text-gray-500 dark:border-gray-700 dark:bg-gray-900 dark:text-gray-400">
                 No bookings yet. Once parents book you, requests will appear here.
               </p>
             )}
@@ -108,7 +108,7 @@ const TutorDashboard = () => {
               ([title, list]) =>
                 list.length > 0 && (
                   <section key={title}>
-                    <h2 className="mb-3 text-lg font-semibold text-gray-900">
+                    <h2 className="mb-3 text-lg font-semibold text-gray-900 dark:text-gray-100">
                       {title} ({list.length})
                     </h2>
                     <div className="space-y-4">
@@ -130,7 +130,7 @@ const TutorDashboard = () => {
       ) : profileLoading ? (
         <LoadingSpinner message="Loading profile..." />
       ) : (
-        <div className="max-w-2xl rounded-xl border border-gray-200 bg-white p-6 shadow-sm">
+        <div className="max-w-2xl rounded-xl border border-gray-200 bg-white p-6 shadow-sm dark:border-gray-800 dark:bg-gray-900">
           <TutorProfileForm profile={profile} onSaved={setProfile} />
         </div>
       )}

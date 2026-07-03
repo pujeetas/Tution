@@ -4,7 +4,7 @@ import Navbar from './components/common/Navbar.jsx';
 import Footer from './components/common/Footer.jsx';
 import LoadingSpinner from './components/common/LoadingSpinner.jsx';
 
-import Home from './pages/Home.jsx';
+import Landing from './pages/Landing.jsx';
 import Login from './pages/Login.jsx';
 import Register from './pages/Register.jsx';
 import TutorList from './pages/TutorList.jsx';
@@ -19,7 +19,14 @@ const ProtectedRoute = ({ children, role }) => {
   const location = useLocation();
 
   if (loading) return <LoadingSpinner />;
-  if (!user) return <Navigate to="/login" state={{ from: location.pathname }} replace />;
+  if (!user)
+    return (
+      <Navigate
+        to="/login"
+        state={{ from: location.pathname + location.search }}
+        replace
+      />
+    );
   if (role && user.role !== role) {
     return (
       <Navigate
@@ -36,11 +43,25 @@ const App = () => (
     <Navbar />
     <main className="mx-auto w-full max-w-6xl flex-1 px-4 py-8">
       <Routes>
-        <Route path="/" element={<Home />} />
+        <Route path="/" element={<Landing />} />
         <Route path="/login" element={<Login />} />
         <Route path="/register" element={<Register />} />
-        <Route path="/tutors" element={<TutorList />} />
-        <Route path="/tutors/:id" element={<TutorProfile />} />
+        <Route
+          path="/tutors"
+          element={
+            <ProtectedRoute>
+              <TutorList />
+            </ProtectedRoute>
+          }
+        />
+        <Route
+          path="/tutors/:id"
+          element={
+            <ProtectedRoute>
+              <TutorProfile />
+            </ProtectedRoute>
+          }
+        />
         <Route
           path="/book/:tutorId"
           element={

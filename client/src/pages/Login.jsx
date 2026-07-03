@@ -34,13 +34,17 @@ const Login = () => {
 
   return (
     <div className="mx-auto max-w-md pt-8">
-      <div className="rounded-xl border border-gray-200 bg-white p-8 shadow-sm">
-        <h1 className="text-2xl font-bold text-gray-900">Welcome back</h1>
-        <p className="mt-1 text-sm text-gray-500">Log in to your TuitionHub SG account</p>
+      <div className="rounded-xl border border-gray-200 bg-white p-8 shadow-sm dark:border-gray-800 dark:bg-gray-900">
+        <h1 className="text-2xl font-bold text-gray-900 dark:text-gray-100">Welcome back</h1>
+        <p className="mt-1 text-sm text-gray-500 dark:text-gray-400">
+          Log in to your TuitionHub SG account
+        </p>
 
         <form onSubmit={handleSubmit} className="mt-6 space-y-4">
           {error && (
-            <p className="rounded-lg bg-red-50 px-4 py-2 text-sm text-red-700">{error}</p>
+            <p className="rounded-lg bg-red-50 px-4 py-2 text-sm text-red-700 dark:bg-red-900/20 dark:text-red-400">
+              {error}
+            </p>
           )}
           <Input
             label="Email"
@@ -65,9 +69,12 @@ const Login = () => {
           </Button>
         </form>
 
-        <p className="mt-4 text-center text-sm text-gray-500">
+        <p className="mt-4 text-center text-sm text-gray-500 dark:text-gray-400">
           No account yet?{' '}
-          <Link to="/register" className="font-medium text-primary-600 hover:underline">
+          <Link
+            to="/register"
+            className="font-medium text-primary-600 hover:underline dark:text-primary-400"
+          >
             Sign up
           </Link>
         </p>

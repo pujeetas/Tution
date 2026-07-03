@@ -18,20 +18,20 @@ const BookingCard = ({ booking, viewerRole, onStatusChange, updating }) => {
     (booking.status === 'Pending' || booking.status === 'Confirmed') && onStatusChange;
 
   return (
-    <div className="flex flex-col gap-3 rounded-xl border border-gray-200 bg-white p-5 shadow-sm">
+    <div className="flex flex-col gap-3 rounded-xl border border-gray-200 bg-white p-5 shadow-sm dark:border-gray-800 dark:bg-gray-900">
       <div className="flex items-start justify-between gap-2">
         <div>
-          <h3 className="font-semibold text-gray-900">
+          <h3 className="font-semibold text-gray-900 dark:text-gray-100">
             {booking.subject} · {booking.childLevel}
           </h3>
-          <p className="text-sm text-gray-500">
+          <p className="text-sm text-gray-500 dark:text-gray-400">
             {viewerRole === 'tutor' ? 'Booked by' : 'Tutor'}: {otherParty?.name}
           </p>
         </div>
         <BookingStatus status={booking.status} />
       </div>
 
-      <div className="grid gap-1 text-sm text-gray-600 sm:grid-cols-2">
+      <div className="grid gap-1 text-sm text-gray-600 dark:text-gray-400 sm:grid-cols-2">
         <p>
           <span className="font-medium">When:</span> {formatDateTime(booking.date)}
         </p>
@@ -50,7 +50,7 @@ const BookingCard = ({ booking, viewerRole, onStatusChange, updating }) => {
       </div>
 
       {booking.notes && (
-        <p className="rounded-lg bg-gray-50 px-3 py-2 text-sm text-gray-600">
+        <p className="rounded-lg bg-gray-50 px-3 py-2 text-sm text-gray-600 dark:bg-gray-800 dark:text-gray-300">
           <span className="font-medium">Notes:</span> {booking.notes}
         </p>
       )}
