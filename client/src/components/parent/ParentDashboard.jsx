@@ -39,8 +39,10 @@ const ParentDashboard = () => {
     <div className="space-y-6">
       <div className="flex flex-wrap items-center justify-between gap-3">
         <div>
-          <h1 className="text-2xl font-bold text-gray-900">Welcome back, {user.name}</h1>
-          <p className="text-sm text-gray-500">Manage your tuition bookings</p>
+          <h1 className="text-2xl font-bold text-gray-900 dark:text-gray-100">
+            Welcome back, {user.name}
+          </h1>
+          <p className="text-sm text-gray-500 dark:text-gray-400">Manage your tuition bookings</p>
         </div>
         <Link to="/tutors">
           <Button>Find a Tutor</Button>
@@ -48,25 +50,34 @@ const ParentDashboard = () => {
       </div>
 
       {location.state?.message && (
-        <p className="rounded-lg bg-green-50 px-4 py-3 text-sm text-green-700">
+        <p className="rounded-lg bg-green-50 px-4 py-3 text-sm text-green-700 dark:bg-green-900/20 dark:text-green-400">
           {location.state.message}
         </p>
       )}
-      {error && <p className="rounded-lg bg-red-50 px-4 py-3 text-sm text-red-700">{error}</p>}
+      {error && (
+        <p className="rounded-lg bg-red-50 px-4 py-3 text-sm text-red-700 dark:bg-red-900/20 dark:text-red-400">
+          {error}
+        </p>
+      )}
       {actionError && (
-        <p className="rounded-lg bg-red-50 px-4 py-3 text-sm text-red-700">{actionError}</p>
+        <p className="rounded-lg bg-red-50 px-4 py-3 text-sm text-red-700 dark:bg-red-900/20 dark:text-red-400">
+          {actionError}
+        </p>
       )}
 
       <div className="grid gap-6 lg:grid-cols-[1fr_280px]">
         <div className="space-y-8">
           <section>
-            <h2 className="mb-3 text-lg font-semibold text-gray-900">
+            <h2 className="mb-3 text-lg font-semibold text-gray-900 dark:text-gray-100">
               Upcoming Sessions ({upcoming.length})
             </h2>
             {upcoming.length === 0 ? (
-              <p className="rounded-xl border border-dashed border-gray-300 bg-white px-4 py-8 text-center text-sm text-gray-500">
+              <p className="rounded-xl border border-dashed border-gray-300 bg-white px-4 py-8 text-center text-sm text-gray-500 dark:border-gray-700 dark:bg-gray-900 dark:text-gray-400">
                 No upcoming sessions.{' '}
-                <Link to="/tutors" className="font-medium text-primary-600 hover:underline">
+                <Link
+                  to="/tutors"
+                  className="font-medium text-primary-600 hover:underline dark:text-primary-400"
+                >
                   Browse tutors
                 </Link>{' '}
                 to book one.
@@ -87,11 +98,11 @@ const ParentDashboard = () => {
           </section>
 
           <section>
-            <h2 className="mb-3 text-lg font-semibold text-gray-900">
+            <h2 className="mb-3 text-lg font-semibold text-gray-900 dark:text-gray-100">
               Past & Other Bookings ({past.length})
             </h2>
             {past.length === 0 ? (
-              <p className="text-sm text-gray-500">No past bookings yet.</p>
+              <p className="text-sm text-gray-500 dark:text-gray-400">No past bookings yet.</p>
             ) : (
               <div className="space-y-4">
                 {past.map((b) => (

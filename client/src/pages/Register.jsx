@@ -47,12 +47,14 @@ const Register = () => {
 
   return (
     <div className="mx-auto max-w-md pt-8">
-      <div className="rounded-xl border border-gray-200 bg-white p-8 shadow-sm">
-        <h1 className="text-2xl font-bold text-gray-900">Create your account</h1>
-        <p className="mt-1 text-sm text-gray-500">Join TuitionHub SG today</p>
+      <div className="rounded-xl border border-gray-200 bg-white p-8 shadow-sm dark:border-gray-800 dark:bg-gray-900">
+        <h1 className="text-2xl font-bold text-gray-900 dark:text-gray-100">
+          Create your account
+        </h1>
+        <p className="mt-1 text-sm text-gray-500 dark:text-gray-400">Join TuitionHub SG today</p>
 
         {/* Role toggle */}
-        <div className="mt-6 grid grid-cols-2 gap-2 rounded-lg bg-gray-100 p-1">
+        <div className="mt-6 grid grid-cols-2 gap-2 rounded-lg bg-gray-100 p-1 dark:bg-gray-800">
           {[
             ['parent', "I'm a Parent"],
             ['tutor', "I'm a Tutor"],
@@ -62,7 +64,9 @@ const Register = () => {
               type="button"
               onClick={() => setRole(value)}
               className={`rounded-md px-3 py-2 text-sm font-medium transition-colors ${
-                role === value ? 'bg-white text-primary-600 shadow' : 'text-gray-500'
+                role === value
+                  ? 'bg-white text-primary-600 shadow dark:bg-gray-700 dark:text-primary-400'
+                  : 'text-gray-500 dark:text-gray-400'
               }`}
             >
               {label}
@@ -72,7 +76,9 @@ const Register = () => {
 
         <form onSubmit={handleSubmit} className="mt-5 space-y-4">
           {error && (
-            <p className="rounded-lg bg-red-50 px-4 py-2 text-sm text-red-700">{error}</p>
+            <p className="rounded-lg bg-red-50 px-4 py-2 text-sm text-red-700 dark:bg-red-900/20 dark:text-red-400">
+              {error}
+            </p>
           )}
 
           <Input
@@ -144,9 +150,12 @@ const Register = () => {
           </Button>
         </form>
 
-        <p className="mt-4 text-center text-sm text-gray-500">
+        <p className="mt-4 text-center text-sm text-gray-500 dark:text-gray-400">
           Already have an account?{' '}
-          <Link to="/login" className="font-medium text-primary-600 hover:underline">
+          <Link
+            to="/login"
+            className="font-medium text-primary-600 hover:underline dark:text-primary-400"
+          >
             Log in
           </Link>
         </p>

@@ -63,7 +63,9 @@ const BookingForm = ({ tutor }) => {
   return (
     <form onSubmit={handleSubmit} className="space-y-4">
       {error && (
-        <p className="rounded-lg bg-red-50 px-4 py-2 text-sm text-red-700">{error}</p>
+        <p className="rounded-lg bg-red-50 px-4 py-2 text-sm text-red-700 dark:bg-red-900/20 dark:text-red-400">
+          {error}
+        </p>
       )}
 
       <div className="grid gap-4 sm:grid-cols-2">
@@ -134,9 +136,13 @@ const BookingForm = ({ tutor }) => {
         maxLength={500}
       />
 
-      <div className="flex items-center justify-between rounded-lg bg-primary-50 px-4 py-3">
-        <span className="text-sm font-medium text-gray-700">Estimated cost</span>
-        <span className="text-lg font-bold text-primary-700">S${estimatedCost}</span>
+      <div className="flex items-center justify-between rounded-lg bg-primary-50 px-4 py-3 dark:bg-primary-900/20">
+        <span className="text-sm font-medium text-gray-700 dark:text-gray-300">
+          Estimated cost
+        </span>
+        <span className="text-lg font-bold text-primary-700 dark:text-primary-400">
+          S${estimatedCost}
+        </span>
       </div>
 
       <Button type="submit" disabled={submitting} className="w-full">
