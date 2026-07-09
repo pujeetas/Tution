@@ -6,10 +6,11 @@ import StaffTutorForm from './StaffTutorForm.jsx';
 import CentreInfo from './CentreInfo.jsx';
 import BookingCard from '../booking/BookingCard.jsx';
 import LoadingSpinner from '../common/LoadingSpinner.jsx';
-import AddedStudentsPanel from '../students/AddedStudentsPanel.jsx';
 import { getErrorMessage } from '../../services/api.js';
 
-const TABS = ['Bookings', 'Staff Tutors', 'Students', 'Organization'];
+// Students management moved to the sidebar's "Manage Database → Students"
+// page (/dashboard/students), matching the Figma IA.
+const TABS = ['Bookings', 'Staff Tutors', 'Organization'];
 
 const CentreDashboard = () => {
   const { user } = useAuth();
@@ -159,8 +160,6 @@ const CentreDashboard = () => {
           </aside>
         </div>
       )}
-
-      {tab === 'Students' && <AddedStudentsPanel />}
 
       {tab === 'Organization' && <CentreInfo />}
     </div>

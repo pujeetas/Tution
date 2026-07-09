@@ -4,10 +4,11 @@ import useBookings from '../../hooks/useBookings.js';
 import TutorProfileForm from './TutorProfileForm.jsx';
 import BookingCard from '../booking/BookingCard.jsx';
 import LoadingSpinner from '../common/LoadingSpinner.jsx';
-import AddedStudentsPanel from '../students/AddedStudentsPanel.jsx';
 import { fetchMyTutorProfile, getErrorMessage } from '../../services/api.js';
 
-const TABS = ['Bookings', 'Students', 'My Profile'];
+// Students management moved to the sidebar's "Manage Database → Students"
+// page (/dashboard/students), matching the Figma IA.
+const TABS = ['Bookings', 'My Profile'];
 
 const TutorDashboard = () => {
   const { user } = useAuth();
@@ -128,8 +129,6 @@ const TutorDashboard = () => {
             )}
           </div>
         )
-      ) : tab === 'Students' ? (
-        <AddedStudentsPanel />
       ) : profileLoading ? (
         <LoadingSpinner message="Loading profile..." />
       ) : (

@@ -15,6 +15,7 @@ import BookingPage from './pages/BookingPage.jsx';
 import ParentDashboardPage from './pages/ParentDashboardPage.jsx';
 import TutorDashboardPage from './pages/TutorDashboardPage.jsx';
 import CentreDashboardPage from './pages/CentreDashboardPage.jsx';
+import StudentsPage from './pages/StudentsPage.jsx';
 
 // Route guard: requires login (and optionally a specific role or list of roles)
 const ProtectedRoute = ({ children, role, roles }) => {
@@ -107,6 +108,14 @@ const App = () => (
         element={
           <ProtectedRoute role="centre">
             <CentreDashboardPage />
+          </ProtectedRoute>
+        }
+      />
+      <Route
+        path="/dashboard/students"
+        element={
+          <ProtectedRoute roles={['tutor', 'centre']}>
+            <StudentsPage />
           </ProtectedRoute>
         }
       />
