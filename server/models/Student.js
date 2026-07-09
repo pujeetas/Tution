@@ -41,6 +41,38 @@ const studentSchema = new mongoose.Schema(
       trim: true,
       default: '',
     },
+    // Extended Student Details fields from the Figma's "Add A New Student"
+    // form (docs/figma-spec §4b) — NRIC is deliberately omitted pending a
+    // PDPA storage/consent decision.
+    dob: {
+      type: Date,
+    },
+    gender: {
+      type: String,
+      enum: ['Male', 'Female', 'Other', ''],
+      default: '',
+    },
+    email: {
+      type: String,
+      trim: true,
+      lowercase: true,
+      default: '',
+    },
+    homeAddress: {
+      type: String,
+      trim: true,
+      default: '',
+    },
+    postalCode: {
+      type: String,
+      trim: true,
+      default: '',
+    },
+    schoolName: {
+      type: String,
+      trim: true,
+      default: '',
+    },
   },
   { timestamps: true }
 );

@@ -7,12 +7,25 @@ import Checkbox from '../common/Checkbox.jsx';
 import Table, { TableHead, TableBody, Th, Td } from '../common/Table.jsx';
 import useAddedStudents from '../../hooks/useAddedStudents.js';
 import { bulkDeleteStudents, addStudentForParent, getErrorMessage } from '../../services/api.js';
-import { CHILD_LEVELS, STUDENT_STATUSES, STUDENT_STATUS_COLORS } from '../../utils/constants.js';
+import {
+  CHILD_LEVELS,
+  STUDENT_GENDERS,
+  STUDENT_STATUSES,
+  STUDENT_STATUS_COLORS,
+} from '../../utils/constants.js';
 
 const EMPTY_FORM = {
   studentName: '',
+  dob: '',
+  phone: '',
+  email: '',
+  gender: '',
+  homeAddress: '',
+  postalCode: '',
   level: 'Primary',
+  schoolName: '',
   parentName: '',
+  parentDob: '',
   parentEmail: '',
   parentPhone: '',
   parentPassword: '',
@@ -187,58 +200,136 @@ const AddedStudentsPanel = ({ onAdded }) => {
             </p>
           )}
 
-          <div className="grid gap-4 sm:grid-cols-2">
-            <Input
-              label="Student's full name"
-              name="studentName"
-              value={form.studentName}
-              onChange={handleFormChange}
-              placeholder="e.g. Ethan Tan"
-            />
-            <Input
-              as="select"
-              label="Level"
-              name="level"
-              value={form.level}
-              onChange={handleFormChange}
-            >
-              {CHILD_LEVELS.map((l) => (
-                <option key={l} value={l}>
-                  {l}
-                </option>
-              ))}
-            </Input>
-            <Input
-              label="Parent's full name"
-              name="parentName"
-              value={form.parentName}
-              onChange={handleFormChange}
-              placeholder="Required if the parent is new"
-            />
-            <Input
-              label="Parent's email"
-              name="parentEmail"
-              type="email"
-              value={form.parentEmail}
-              onChange={handleFormChange}
-              placeholder="parent@example.com"
-            />
-            <Input
-              label="Parent's phone"
-              name="parentPhone"
-              type="tel"
-              value={form.parentPhone}
-              onChange={handleFormChange}
-              placeholder="Required if the parent is new"
-            />
-            <Input
-              label="Parent's password"
-              name="parentPassword"
-              type="password"
-              value={form.parentPassword}
-              onChange={handleFormChange}
-              placeholder="Required if the parent is new"
-            />
+          <div>
+            <h4 className="mb-3 text-sm font-semibold uppercase tracking-wide text-gray-400 dark:text-gray-500">
+              Student Details
+            </h4>
+            <div className="grid gap-4 sm:grid-cols-2">
+              <Input
+                label="Full Name"
+                name="studentName"
+                value={form.studentName}
+                onChange={handleFormChange}
+                placeholder="e.g. Ethan Tan"
+              />
+              <Input
+                label="Date of Birth"
+                name="dob"
+                type="date"
+                value={form.dob}
+                onChange={handleFormChange}
+              />
+              <Input
+                label="Phone Number"
+                name="phone"
+                type="tel"
+                value={form.phone}
+                onChange={handleFormChange}
+                placeholder="e.g. 8770 3325"
+              />
+              <Input
+                label="Email Address"
+                name="email"
+                type="email"
+                value={form.email}
+                onChange={handleFormChange}
+                placeholder="e.g. student@example.com"
+              />
+              <Input
+                as="select"
+                label="Gender"
+                name="gender"
+                value={form.gender}
+                onChange={handleFormChange}
+              >
+                <option value="">Select gender</option>
+                {STUDENT_GENDERS.map((g) => (
+                  <option key={g} value={g}>
+                    {g}
+                  </option>
+                ))}
+              </Input>
+              <Input
+                as="select"
+                label="Level"
+                name="level"
+                value={form.level}
+                onChange={handleFormChange}
+              >
+                {CHILD_LEVELS.map((l) => (
+                  <option key={l} value={l}>
+                    {l}
+                  </option>
+                ))}
+              </Input>
+              <Input
+                label="Home Address"
+                name="homeAddress"
+                value={form.homeAddress}
+                onChange={handleFormChange}
+                placeholder="e.g. 12 Mount Elizabeth"
+              />
+              <Input
+                label="Postal Code"
+                name="postalCode"
+                value={form.postalCode}
+                onChange={handleFormChange}
+                placeholder="e.g. 231851"
+              />
+              <Input
+                label="School Name"
+                name="schoolName"
+                value={form.schoolName}
+                onChange={handleFormChange}
+                placeholder="e.g. Uniad Primary School"
+              />
+            </div>
+          </div>
+
+          <div>
+            <h4 className="mb-3 text-sm font-semibold uppercase tracking-wide text-gray-400 dark:text-gray-500">
+              Parent Details
+            </h4>
+            <div className="grid gap-4 sm:grid-cols-2">
+              <Input
+                label="Full Name"
+                name="parentName"
+                value={form.parentName}
+                onChange={handleFormChange}
+                placeholder="Required if the parent is new"
+              />
+              <Input
+                label="Date of Birth"
+                name="parentDob"
+                type="date"
+                value={form.parentDob}
+                onChange={handleFormChange}
+              />
+              <Input
+                label="Email Address"
+                name="parentEmail"
+                type="email"
+                value={form.parentEmail}
+                onChange={handleFormChange}
+                placeholder="parent@example.com"
+              />
+              <Input
+                label="Phone Number"
+                name="parentPhone"
+                type="tel"
+                value={form.parentPhone}
+                onChange={handleFormChange}
+                placeholder="Required if the parent is new"
+              />
+              <Input
+                label="Initial password"
+                name="parentPassword"
+                type="password"
+                value={form.parentPassword}
+                onChange={handleFormChange}
+                placeholder="Required if the parent is new"
+              />
+            </div>
           </div>
 
           <Button type="submit" disabled={saving}>

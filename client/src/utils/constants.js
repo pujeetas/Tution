@@ -17,6 +17,8 @@ export const LEVELS = ['PSLE', 'O-Levels', 'A-Levels'];
 
 export const CHILD_LEVELS = ['Primary', 'Secondary', 'JC'];
 
+export const STUDENT_GENDERS = ['Male', 'Female', 'Other'];
+
 export const ROLES = ['parent', 'tutor', 'centre'];
 
 export const DASHBOARD_PATHS = {

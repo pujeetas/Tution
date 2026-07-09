@@ -92,8 +92,22 @@ export const bulkDeleteStudents = async (req, res, next) => {
 // @access  Private (tutor, centre)
 export const addStudentForParent = async (req, res, next) => {
   try {
-    const { studentName, level, parentName, parentEmail, parentPhone, parentPassword } =
-      req.body;
+    const {
+      studentName,
+      level,
+      dob,
+      phone,
+      gender,
+      email,
+      homeAddress,
+      postalCode,
+      schoolName,
+      parentName,
+      parentEmail,
+      parentPhone,
+      parentPassword,
+      parentDob,
+    } = req.body;
 
     if (!studentName || !level || !parentEmail) {
       res.status(400);
@@ -109,10 +123,10 @@ export const addStudentForParent = async (req, res, next) => {
     }
 
     if (!parent) {
-      if (!parentName || !parentPhone || !parentPassword) {
+      if (!parentName || !parentPhone || !parentPassword || !parentDob) {
         res.status(400);
         throw new Error(
-          'Parent name, phone and password are required to create a new parent account'
+          "Parent name, date of birth, phone and password are required to create a new parent account"
         );
       }
       parent = await User.create({
@@ -120,6 +134,7 @@ export const addStudentForParent = async (req, res, next) => {
         email: parentEmail,
         phone: parentPhone,
         password: parentPassword,
+        dob: parentDob,
         role: 'parent',
       });
       createdNewParent = true;
@@ -129,6 +144,13 @@ export const addStudentForParent = async (req, res, next) => {
       parent: parent._id,
       name: studentName,
       level,
+      dob: dob || undefined,
+      phone: phone || '',
+      gender: gender || '',
+      email: email || '',
+      homeAddress: homeAddress || '',
+      postalCode: postalCode || '',
+      schoolName: schoolName || '',
       addedBy: req.user._id,
       organization: req.user.organization || null,
     });
