@@ -60,6 +60,14 @@ export const saveMyOrganization = (data) => api.patch('/organizations/me', data)
 export const fetchMyStaff = () => api.get('/organizations/me/staff');
 export const createStaffTutor = (data) => api.post('/organizations/staff', data);
 export const fetchStaffOptions = () => api.get('/organizations/meta/options');
+export const fetchOrgAdmins = (filters = {}) => {
+  const params = Object.fromEntries(
+    Object.entries(filters).filter(([, v]) => v !== '' && v != null)
+  );
+  return api.get('/organizations/admins', { params });
+};
+export const createOrgAdmin = (data) => api.post('/organizations/admins', data);
+export const bulkDeleteAdmins = (ids) => api.post('/organizations/admins/bulk-delete', { ids });
 
 // ---- Students ----
 export const fetchMyStudents = () => api.get('/students/me');

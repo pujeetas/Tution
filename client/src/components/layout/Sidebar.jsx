@@ -47,6 +47,7 @@ const ADMIN_NAV = [
       { label: 'Organisation', Icon: IconOrganisation },
       { label: 'Roles & Access Control', Icon: IconRoles },
       { label: 'Students', Icon: IconUsers, to: '/dashboard/students' },
+      { label: 'Admins', Icon: IconUsers, to: '/dashboard/admins', centreOnly: true },
       { label: 'Lessons', Icon: IconClasses },
       { label: 'Reports', Icon: IconReports },
     ],
@@ -105,16 +106,18 @@ const Sidebar = () => {
                   {group}
                 </p>
               )}
-              {items.map(({ label, Icon, to }) =>
-                to ? (
-                  <NavLink key={label} to={to} className={navLinkClass}>
-                    <Icon className="h-5 w-5 shrink-0" />
-                    <span className="truncate">{label}</span>
-                  </NavLink>
-                ) : (
-                  <SoonItem key={label} label={label} Icon={Icon} />
-                )
-              )}
+              {items
+                .filter((item) => !item.centreOnly || user.role === 'centre')
+                .map(({ label, Icon, to }) =>
+                  to ? (
+                    <NavLink key={label} to={to} className={navLinkClass}>
+                      <Icon className="h-5 w-5 shrink-0" />
+                      <span className="truncate">{label}</span>
+                    </NavLink>
+                  ) : (
+                    <SoonItem key={label} label={label} Icon={Icon} />
+                  )
+                )}
             </div>
           ))}
 
