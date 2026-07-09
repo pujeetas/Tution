@@ -2,6 +2,7 @@ import { Link, NavLink, useNavigate } from 'react-router-dom';
 import useAuth from '../../hooks/useAuth.js';
 import Button from './Button.jsx';
 import ThemeToggle from './ThemeToggle.jsx';
+import { getDashboardPath } from '../../utils/constants.js';
 
 const Navbar = () => {
   const { user, logout } = useAuth();
@@ -12,7 +13,7 @@ const Navbar = () => {
     navigate('/');
   };
 
-  const dashboardPath = user?.role === 'tutor' ? '/dashboard/tutor' : '/dashboard/parent';
+  const dashboardPath = getDashboardPath(user?.role);
 
   const linkClass = ({ isActive }) =>
     `text-sm font-medium transition-colors ${
@@ -31,9 +32,6 @@ const Navbar = () => {
         <div className="flex items-center gap-5">
           {user ? (
             <>
-              <NavLink to="/tutors" className={linkClass}>
-                Find Tutors
-              </NavLink>
               <NavLink to={dashboardPath} className={linkClass}>
                 Dashboard
               </NavLink>

@@ -1,5 +1,6 @@
 import Booking from '../models/Booking.js';
 import TutorProfile from '../models/TutorProfile.js';
+import Student from '../models/Student.js';
 
 // Allowed status transitions: Pending -> Confirmed -> Completed; Pending/Confirmed -> Cancelled
 const ALLOWED_TRANSITIONS = {
@@ -14,18 +15,25 @@ const ALLOWED_TRANSITIONS = {
 // @access  Private (parent)
 export const createBooking = async (req, res, next) => {
   try {
-    const { tutorProfileId, subject, date, durationHours, mode, notes, childName, childLevel } =
-      req.body;
+    const { tutorProfileId, subject, date, durationHours, mode, notes, studentId } = req.body;
 
-    if (!tutorProfileId || !subject || !date || !durationHours || !mode) {
+    if (!tutorProfileId || !subject || !date || !durationHours || !mode || !studentId) {
       res.status(400);
-      throw new Error('tutorProfileId, subject, date, durationHours and mode are required');
+      throw new Error(
+        'tutorProfileId, subject, date, durationHours, mode and studentId are required'
+      );
     }
 
     const tutorProfile = await TutorProfile.findById(tutorProfileId);
     if (!tutorProfile) {
       res.status(404);
       throw new Error('Tutor not found');
+    }
+
+    const student = await Student.findOne({ _id: studentId, parent: req.user._id });
+    if (!student) {
+      res.status(404);
+      throw new Error('Student not found');
     }
 
     const sessionDate = new Date(date);
@@ -54,18 +62,20 @@ export const createBooking = async (req, res, next) => {
     const booking = await Booking.create({
       tutor: tutorProfile.user,
       parent: req.user._id,
-      childName: childName || req.user.childName,
-      childLevel: childLevel || req.user.childLevel,
+      organization: tutorProfile.organization || undefined,
+      student: student._id,
       subject,
       date: sessionDate,
       durationHours,
       mode,
       notes,
+      amount: tutorProfile.hourlyRate * durationHours,
     });
 
     const populated = await booking.populate([
       { path: 'tutor', select: 'name email' },
       { path: 'parent', select: 'name email' },
+      { path: 'student' },
     ]);
 
     res.status(201).json({ success: true, booking: populated });
@@ -79,12 +89,19 @@ export const createBooking = async (req, res, next) => {
 // @access  Private
 export const getMyBookings = async (req, res, next) => {
   try {
-    const filter =
-      req.user.role === 'tutor' ? { tutor: req.user._id } : { parent: req.user._id };
+    let filter;
+    if (req.user.role === 'tutor') {
+      filter = { tutor: req.user._id };
+    } else if (req.user.role === 'centre') {
+      filter = { organization: req.user.organization };
+    } else {
+      filter = { parent: req.user._id };
+    }
 
     const bookings = await Booking.find(filter)
       .populate('tutor', 'name email')
       .populate('parent', 'name email phone')
+      .populate('student')
       .sort({ date: -1 });
 
     res.json({ success: true, count: bookings.length, bookings });
@@ -108,14 +125,20 @@ export const updateBookingStatus = async (req, res, next) => {
 
     const isTutor = booking.tutor.toString() === req.user._id.toString();
     const isParent = booking.parent.toString() === req.user._id.toString();
+    const isCentreAdmin =
+      req.user.role === 'centre' &&
+      req.user.organization &&
+      booking.organization &&
+      booking.organization.toString() === req.user.organization.toString();
 
-    if (!isTutor && !isParent) {
+    if (!isTutor && !isParent && !isCentreAdmin) {
       res.status(403);
       throw new Error('Not authorized to update this booking');
     }
 
-    // Parents may only cancel; tutors may confirm, complete or cancel
-    if (isParent && !isTutor && status !== 'Cancelled') {
+    // Parents may only cancel; tutors and the tutor's centre admin may confirm, complete or cancel
+    const actingAsTutor = isTutor || isCentreAdmin;
+    if (isParent && !actingAsTutor && status !== 'Cancelled') {
       res.status(403);
       throw new Error('Parents can only cancel a booking');
     }
@@ -126,12 +149,60 @@ export const updateBookingStatus = async (req, res, next) => {
       throw new Error(`Cannot change status from ${booking.status} to ${status}`);
     }
 
+    if (status === 'Completed' && booking.paymentStatus !== 'paid') {
+      res.status(400);
+      throw new Error('Booking must be paid before it can be marked completed');
+    }
+
     booking.status = status;
     await booking.save();
 
     const populated = await booking.populate([
       { path: 'tutor', select: 'name email' },
       { path: 'parent', select: 'name email phone' },
+      { path: 'student' },
+    ]);
+
+    res.json({ success: true, booking: populated });
+  } catch (error) {
+    next(error);
+  }
+};
+
+// @desc    Simulate payment for a confirmed booking (dev-only stand-in for a real payment gateway)
+// @route   PATCH /api/bookings/:id/pay
+// @access  Private (parent, own booking)
+export const simulatePayment = async (req, res, next) => {
+  try {
+    const booking = await Booking.findById(req.params.id);
+
+    if (!booking) {
+      res.status(404);
+      throw new Error('Booking not found');
+    }
+
+    if (booking.parent.toString() !== req.user._id.toString()) {
+      res.status(403);
+      throw new Error('Not authorized to pay for this booking');
+    }
+
+    if (booking.status !== 'Confirmed') {
+      res.status(400);
+      throw new Error('Booking must be confirmed by the tutor before payment');
+    }
+
+    if (booking.paymentStatus === 'paid') {
+      res.status(400);
+      throw new Error('Booking is already paid');
+    }
+
+    booking.paymentStatus = 'paid';
+    await booking.save();
+
+    const populated = await booking.populate([
+      { path: 'tutor', select: 'name email' },
+      { path: 'parent', select: 'name email phone' },
+      { path: 'student' },
     ]);
 
     res.json({ success: true, booking: populated });

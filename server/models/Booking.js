@@ -1,6 +1,7 @@
 import mongoose from 'mongoose';
 
 export const BOOKING_STATUSES = ['Pending', 'Confirmed', 'Completed', 'Cancelled'];
+export const PAYMENT_STATUSES = ['unpaid', 'paid'];
 
 const bookingSchema = new mongoose.Schema(
   {
@@ -14,15 +15,16 @@ const bookingSchema = new mongoose.Schema(
       ref: 'User',
       required: true,
     },
-    childName: {
-      type: String,
-      required: [true, "Child's name is required"],
-      trim: true,
+    // Denormalized from the tutor's TutorProfile at creation time; null if tutor is independent
+    organization: {
+      type: mongoose.Schema.Types.ObjectId,
+      ref: 'Organization',
+      default: null,
     },
-    childLevel: {
-      type: String,
-      enum: ['Primary', 'Secondary', 'JC'],
-      required: [true, "Child's level is required"],
+    student: {
+      type: mongoose.Schema.Types.ObjectId,
+      ref: 'Student',
+      required: [true, 'Student is required'],
     },
     subject: {
       type: String,
@@ -54,12 +56,23 @@ const bookingSchema = new mongoose.Schema(
       enum: BOOKING_STATUSES,
       default: 'Pending',
     },
+    amount: {
+      type: Number,
+      required: [true, 'Amount is required'],
+      min: [0, 'Amount cannot be negative'],
+    },
+    paymentStatus: {
+      type: String,
+      enum: PAYMENT_STATUSES,
+      default: 'unpaid',
+    },
   },
   { timestamps: true }
 );
 
 bookingSchema.index({ tutor: 1, date: 1 });
 bookingSchema.index({ parent: 1, date: 1 });
+bookingSchema.index({ organization: 1, date: 1 });
 
 const Booking = mongoose.model('Booking', bookingSchema);
 export default Booking;

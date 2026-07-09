@@ -1,0 +1,130 @@
+import User from '../models/User.js';
+import Organization from '../models/Organization.js';
+import TutorProfile, { SUBJECTS, LEVELS, TEACHING_MODES } from '../models/TutorProfile.js';
+
+// @desc    Get own organization profile
+// @route   GET /api/organizations/me
+// @access  Private (centre)
+export const getMyOrganization = async (req, res, next) => {
+  try {
+    const organization = await Organization.findById(req.user.organization);
+    res.json({ success: true, organization });
+  } catch (error) {
+    next(error);
+  }
+};
+
+// @desc    Update own organization profile
+// @route   PATCH /api/organizations/me
+// @access  Private (centre)
+export const updateMyOrganization = async (req, res, next) => {
+  try {
+    const { name, registrationNo, phone } = req.body;
+
+    const organization = await Organization.findByIdAndUpdate(
+      req.user.organization,
+      { name, registrationNo, phone },
+      { new: true, runValidators: true }
+    );
+
+    if (!organization) {
+      res.status(404);
+      throw new Error('Organization not found');
+    }
+
+    res.json({ success: true, organization });
+  } catch (error) {
+    next(error);
+  }
+};
+
+// @desc    List staff tutors belonging to this organization
+// @route   GET /api/organizations/me/staff
+// @access  Private (centre)
+export const listStaff = async (req, res, next) => {
+  try {
+    const staff = await TutorProfile.find({ organization: req.user.organization })
+      .populate('user', 'name email phone')
+      .sort({ createdAt: -1 });
+
+    res.json({ success: true, count: staff.length, staff });
+  } catch (error) {
+    next(error);
+  }
+};
+
+// @desc    Create a staff tutor account under this organization
+// @route   POST /api/organizations/staff
+// @access  Private (centre)
+export const createStaffTutor = async (req, res, next) => {
+  try {
+    const {
+      name,
+      email,
+      password,
+      phone,
+      subjects,
+      levels,
+      teachingMode,
+      hourlyRate,
+      bio,
+      yearsExperience,
+    } = req.body;
+
+    if (!name || !email || !password || !phone) {
+      res.status(400);
+      throw new Error('Name, email, password and phone are required');
+    }
+
+    if (!subjects?.length || !levels?.length || !teachingMode || !hourlyRate) {
+      res.status(400);
+      throw new Error('Subjects, levels, teaching mode and hourly rate are required');
+    }
+
+    const exists = await User.findOne({ email: email.toLowerCase() });
+    if (exists) {
+      res.status(409);
+      throw new Error('An account with that email already exists');
+    }
+
+    const tutor = await User.create({
+      name,
+      email,
+      password,
+      phone,
+      role: 'tutor',
+      organization: req.user.organization,
+    });
+
+    const profile = await TutorProfile.create({
+      user: tutor._id,
+      organization: req.user.organization,
+      subjects,
+      levels,
+      teachingMode,
+      hourlyRate,
+      bio,
+      yearsExperience,
+    });
+
+    res.status(201).json({
+      success: true,
+      tutor: { id: tutor._id, name: tutor.name, email: tutor.email, phone: tutor.phone },
+      profile,
+    });
+  } catch (error) {
+    next(error);
+  }
+};
+
+// @desc    Get filter option lists (subjects, levels, modes) for the staff tutor form
+// @route   GET /api/organizations/meta/options
+// @access  Private (centre)
+export const getStaffOptions = (req, res) => {
+  res.json({
+    success: true,
+    subjects: SUBJECTS,
+    levels: LEVELS,
+    teachingModes: TEACHING_MODES,
+  });
+};

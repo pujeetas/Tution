@@ -1,15 +1,16 @@
-import { useState } from 'react';
-import { useNavigate } from 'react-router-dom';
+import { useState, useEffect } from 'react';
+import { useNavigate, Link } from 'react-router-dom';
 import Button from '../common/Button.jsx';
 import Input from '../common/Input.jsx';
-import useAuth from '../../hooks/useAuth.js';
+import useStudents from '../../hooks/useStudents.js';
+import BusyCalendar from './BusyCalendar.jsx';
 import { createBooking, getErrorMessage } from '../../services/api.js';
-import { CHILD_LEVELS, DURATIONS } from '../../utils/constants.js';
+import { DURATIONS } from '../../utils/constants.js';
 import { minDateTimeLocal } from '../../utils/formatDate.js';
 
 const BookingForm = ({ tutor }) => {
-  const { user } = useAuth();
   const navigate = useNavigate();
+  const { students, loading: studentsLoading } = useStudents();
 
   const modeOptions =
     tutor.teachingMode === 'both' ? ['online', 'in-person'] : [tutor.teachingMode];
@@ -19,12 +20,17 @@ const BookingForm = ({ tutor }) => {
     date: '',
     durationHours: 1,
     mode: modeOptions[0],
-    childName: user?.childName || '',
-    childLevel: user?.childLevel || 'Primary',
+    studentId: '',
     notes: '',
   });
   const [submitting, setSubmitting] = useState(false);
   const [error, setError] = useState('');
+
+  useEffect(() => {
+    if (!form.studentId && students.length > 0) {
+      setForm((prev) => ({ ...prev, studentId: students[0]._id }));
+    }
+  }, [students]); // eslint-disable-line react-hooks/exhaustive-deps
 
   const handleChange = (e) => setForm({ ...form, [e.target.name]: e.target.value });
 
@@ -35,7 +41,7 @@ const BookingForm = ({ tutor }) => {
     if (!form.date) return setError('Please choose a date and time');
     if (new Date(form.date) <= new Date())
       return setError('Session must be in the future');
-    if (!form.childName.trim()) return setError("Please enter your child's name");
+    if (!form.studentId) return setError('Please select a student');
 
     setSubmitting(true);
     try {
@@ -45,8 +51,7 @@ const BookingForm = ({ tutor }) => {
         date: new Date(form.date).toISOString(),
         durationHours: Number(form.durationHours),
         mode: form.mode,
-        childName: form.childName.trim(),
-        childLevel: form.childLevel,
+        studentId: form.studentId,
         notes: form.notes.trim(),
       });
       navigate('/dashboard/parent', {
@@ -58,6 +63,21 @@ const BookingForm = ({ tutor }) => {
     }
   };
 
+  if (!studentsLoading && students.length === 0) {
+    return (
+      <p className="rounded-xl border border-dashed border-gray-300 bg-white px-4 py-8 text-center text-sm text-gray-500 dark:border-gray-700 dark:bg-gray-900 dark:text-gray-400">
+        You need to add a student before requesting a booking.{' '}
+        <Link
+          to="/dashboard/parent"
+          className="font-medium text-primary-600 hover:underline dark:text-primary-400"
+        >
+          Add a student
+        </Link>{' '}
+        first.
+      </p>
+    );
+  }
+
   const estimatedCost = (tutor.hourlyRate * Number(form.durationHours)).toFixed(0);
 
   return (
@@ -67,6 +87,8 @@ const BookingForm = ({ tutor }) => {
           {error}
         </p>
       )}
+
+      <BusyCalendar tutorId={tutor._id} />
 
       <div className="grid gap-4 sm:grid-cols-2">
         <Input as="select" label="Subject" name="subject" value={form.subject} onChange={handleChange}>
@@ -105,22 +127,15 @@ const BookingForm = ({ tutor }) => {
           ))}
         </Input>
         <Input
-          label="Child's name"
-          name="childName"
-          value={form.childName}
-          onChange={handleChange}
-          placeholder="e.g. Ethan"
-        />
-        <Input
           as="select"
-          label="Child's level"
-          name="childLevel"
-          value={form.childLevel}
+          label="Student"
+          name="studentId"
+          value={form.studentId}
           onChange={handleChange}
         >
-          {CHILD_LEVELS.map((l) => (
-            <option key={l} value={l}>
-              {l}
+          {students.map((s) => (
+            <option key={s._id} value={s._id}>
+              {s.name} ({s.level})
             </option>
           ))}
         </Input>

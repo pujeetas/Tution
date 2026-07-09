@@ -24,21 +24,36 @@ const userSchema = new mongoose.Schema(
     },
     role: {
       type: String,
-      enum: ['tutor', 'parent'],
+      enum: ['tutor', 'parent', 'centre'],
       required: [true, 'Role is required'],
     },
     phone: {
       type: String,
       trim: true,
     },
-    // Parent-only fields
-    childName: {
-      type: String,
-      trim: true,
+    dob: {
+      type: Date,
     },
-    childLevel: {
-      type: String,
-      enum: ['Primary', 'Secondary', 'JC', null],
+    // Set for centre-admin users (their own org) and for staff tutors employed by a centre
+    organization: {
+      type: mongoose.Schema.Types.ObjectId,
+      ref: 'Organization',
+      default: null,
+    },
+    // Whether this tutor/centre admin has completed the post-signup "Getting Started" step
+    onboardingComplete: {
+      type: Boolean,
+      default: false,
+    },
+    // Which registration forms this account has enabled (set during onboarding)
+    registrationForms: {
+      student: { type: Boolean, default: true },
+      admin: { type: Boolean, default: false },
+    },
+    // Customised field configuration for the Student/Admin registration forms
+    // (Form Builder). Free-form since the field catalog is defined client-side.
+    formConfig: {
+      type: mongoose.Schema.Types.Mixed,
       default: null,
     },
   },

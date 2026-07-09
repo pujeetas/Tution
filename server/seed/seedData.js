@@ -3,6 +3,7 @@ import mongoose from 'mongoose';
 import User from '../models/User.js';
 import TutorProfile from '../models/TutorProfile.js';
 import Booking from '../models/Booking.js';
+import Student from '../models/Student.js';
 
 dotenv.config();
 
@@ -92,16 +93,17 @@ const parents = [
     name: 'David Wong',
     email: 'david.wong@example.com',
     phone: '+65 9678 9012',
-    childName: 'Ethan Wong',
-    childLevel: 'Primary',
   },
   {
     name: 'Mei Hua Lee',
     email: 'meihua.lee@example.com',
     phone: '+65 9789 0123',
-    childName: 'Chloe Lee',
-    childLevel: 'JC',
   },
+];
+
+const students = [
+  { name: 'Ethan Wong', level: 'Primary' },
+  { name: 'Chloe Lee', level: 'JC' },
 ];
 
 const seed = async () => {
@@ -109,7 +111,12 @@ const seed = async () => {
     await mongoose.connect(process.env.MONGO_URI);
     console.log('Connected to MongoDB');
 
-    await Promise.all([User.deleteMany(), TutorProfile.deleteMany(), Booking.deleteMany()]);
+    await Promise.all([
+      User.deleteMany(),
+      TutorProfile.deleteMany(),
+      Booking.deleteMany(),
+      Student.deleteMany(),
+    ]);
     console.log('Cleared existing data');
 
     for (const t of tutors) {
@@ -122,9 +129,10 @@ const seed = async () => {
       console.log(`Created tutor: ${user.name} (${user.email})`);
     }
 
-    for (const p of parents) {
+    for (const [i, p] of parents.entries()) {
       const user = await User.create({ ...p, password: PASSWORD, role: 'parent' });
-      console.log(`Created parent: ${user.name} (${user.email})`);
+      await Student.create({ ...students[i], parent: user._id });
+      console.log(`Created parent: ${user.name} (${user.email}) with student ${students[i].name}`);
     }
 
     console.log('\nSeed complete. All accounts use password: ' + PASSWORD);

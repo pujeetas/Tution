@@ -1,29 +1,44 @@
 import { Link, Navigate } from 'react-router-dom';
 import Button from '../components/common/Button.jsx';
 import useAuth from '../hooks/useAuth.js';
-import { SUBJECTS } from '../utils/constants.js';
+import { getDashboardPath } from '../utils/constants.js';
+
+const FEATURES = [
+  {
+    title: 'Scheduling',
+    desc: 'Classes and one-off sessions on a shared calendar. Attendance takes seconds to mark.',
+  },
+  {
+    title: 'Invoicing & payments',
+    desc: 'Attendance turns straight into invoices. Track who has paid and who is overdue, PayNow-ready.',
+  },
+  {
+    title: 'Centre & staff management',
+    desc: 'Bring your tutors onto one organisation account with their own scoped dashboards.',
+  },
+];
 
 const STEPS = [
   {
-    title: 'Create an account',
-    desc: 'Free for parents and students. Tell us the level and subjects you need help with.',
+    title: 'Set up your account',
+    desc: 'Sign up as an individual tutor or bring your whole centre onboard as staff.',
   },
   {
-    title: 'Compare tutors',
-    desc: 'Filter by subject, level, hourly rate and mode. Every profile shows qualifications and reviews.',
+    title: 'Run your classes',
+    desc: 'Schedule sessions, take attendance, and keep every student record in one place.',
   },
   {
-    title: 'Book a session',
-    desc: 'Pick a time that works. The tutor confirms and you get a reminder before the lesson.',
+    title: 'Get paid, on time',
+    desc: 'Send invoices straight from attendance and track payments without chasing spreadsheets.',
   },
 ];
 
 const Landing = () => {
   const { user, loading } = useAuth();
 
-  // Already signed in — skip the pitch and go straight to browsing tutors.
+  // Already signed in — skip the pitch and go straight to their dashboard.
   if (!loading && user) {
-    return <Navigate to="/tutors" replace />;
+    return <Navigate to={getDashboardPath(user.role)} replace />;
   }
 
   return (
@@ -33,21 +48,21 @@ const Landing = () => {
         {/* Copy */}
         <div>
           <p className="text-xs font-semibold uppercase tracking-[0.2em] text-primary-600 dark:text-primary-400">
-            Tuition in Singapore
+            For tutors & tuition centres in Singapore
           </p>
           <h1 className="mt-4 text-4xl font-bold leading-[1.1] tracking-tight text-gray-900 dark:text-gray-100 sm:text-[3.4rem]">
-            The right tutor,
+            Grow your tuition
             <br />
-            without the guesswork.
+            business, not your admin.
           </h1>
           <p className="mt-5 max-w-md text-lg leading-relaxed text-gray-600 dark:text-gray-400">
-            Browse qualified tutors for PSLE, O-Level and A-Level subjects. See real
-            qualifications, rates and reviews before you book — online or at your place.
+            Scheduling, attendance and invoicing in one place — so you spend less time on
+            spreadsheets and more time teaching.
           </p>
 
           <div className="mt-8 flex flex-wrap items-center gap-4">
             <Link to="/register">
-              <Button className="px-7 py-3 text-base">Find a tutor</Button>
+              <Button className="px-7 py-3 text-base">Get started free</Button>
             </Link>
             <Link
               to="/login"
@@ -58,97 +73,88 @@ const Landing = () => {
           </div>
 
           <p className="mt-10 text-sm text-gray-500 dark:text-gray-400">
-            Teaching?{' '}
+            Running a tuition centre?{' '}
             <Link
-              to="/register?role=tutor"
+              to="/register?role=centre"
               className="font-medium text-gray-900 underline decoration-primary-400 decoration-2 underline-offset-4 hover:text-primary-600 dark:text-gray-100 dark:hover:text-primary-400"
             >
-              List your tutor profile
+              Set up your organisation
             </Link>{' '}
-            — it takes about five minutes.
+            and bring your tutors on as staff.
           </p>
         </div>
 
-        {/* Product preview: a sample tutor card, so visitors see exactly what they get */}
+        {/* Product preview: a mock of the attendance → invoice flow */}
         <div className="relative mx-auto w-full max-w-sm" aria-hidden="true">
           {/* Offset backdrop card */}
           <div className="absolute -right-3 top-4 h-full w-full rounded-2xl border border-gray-200 bg-gray-50 dark:border-gray-800 dark:bg-gray-900" />
 
           <div className="relative rounded-2xl border border-gray-200 bg-white p-6 shadow-[0_8px_30px_rgba(0,0,0,0.06)] dark:border-gray-800 dark:bg-gray-900 dark:shadow-[0_8px_30px_rgba(0,0,0,0.3)]">
-            <div className="flex items-start justify-between">
-              <div className="flex items-center gap-3">
-                <div className="flex h-12 w-12 items-center justify-center rounded-full bg-primary-100 text-lg font-semibold text-primary-700 dark:bg-primary-900/30 dark:text-primary-300">
-                  WL
-                </div>
-                <div>
-                  <p className="font-semibold text-gray-900 dark:text-gray-100">Ms Wei Lin</p>
-                  <p className="text-sm text-gray-500 dark:text-gray-400">
-                    NIE-trained · 8 yrs experience
-                  </p>
-                </div>
+            <div className="flex items-center justify-between">
+              <div>
+                <p className="font-semibold text-gray-900 dark:text-gray-100">Sec 4 A-Maths</p>
+                <p className="text-sm text-gray-500 dark:text-gray-400">Today · 4:00–5:30pm</p>
               </div>
-              <span className="rounded-md bg-gray-100 px-2 py-1 text-xs font-medium text-gray-700 dark:bg-gray-800 dark:text-gray-300">
-                ★ 4.9
+              <span className="rounded-md bg-green-100 px-2 py-1 text-xs font-medium text-green-700 dark:bg-green-900/30 dark:text-green-400">
+                Attendance taken
               </span>
             </div>
 
-            <div className="mt-4 flex flex-wrap gap-1.5">
-              {['O-Level E-Math', 'A-Math', 'Sec 3–4'].map((tag) => (
-                <span
-                  key={tag}
-                  className="rounded-md border border-gray-200 px-2 py-1 text-xs text-gray-600 dark:border-gray-700 dark:text-gray-400"
+            <div className="mt-4 space-y-2">
+              {[
+                { name: 'Wei Jun', status: 'Present' },
+                { name: 'Kim An', status: 'Present' },
+                { name: 'Jay En', status: 'Late' },
+              ].map((s) => (
+                <div
+                  key={s.name}
+                  className="flex items-center justify-between rounded-lg border border-gray-100 px-3 py-2 text-sm dark:border-gray-800"
                 >
-                  {tag}
-                </span>
+                  <span className="text-gray-700 dark:text-gray-300">{s.name}</span>
+                  <span className="text-xs text-gray-500 dark:text-gray-400">{s.status}</span>
+                </div>
               ))}
             </div>
 
             <div className="mt-5 flex items-end justify-between border-t border-gray-100 pt-4 dark:border-gray-800">
               <div>
                 <p className="text-xs uppercase tracking-wide text-gray-400 dark:text-gray-500">
-                  From
+                  Invoice #0231
                 </p>
                 <p className="text-xl font-semibold text-gray-900 dark:text-gray-100">
-                  $55
+                  S$450
                   <span className="text-sm font-normal text-gray-500 dark:text-gray-400">
-                    /hr
+                    /3 students
                   </span>
                 </p>
               </div>
               <span className="rounded-lg bg-primary-600 px-4 py-2 text-sm font-medium text-white">
-                View profile
+                Send invoice
               </span>
             </div>
           </div>
 
           <p className="relative mt-4 text-center text-xs text-gray-400 dark:text-gray-500">
-            Example profile — sign up to browse all tutors
+            Example — invoices generate straight from attendance
           </p>
         </div>
       </section>
 
-      {/* ── Subjects strip ───────────────────────────────────── */}
-      <section className="mx-auto mt-20 max-w-6xl px-4">
-        <div className="flex items-baseline justify-between">
+      {/* ── Feature highlights ───────────────────────────────── */}
+      <section className="mx-auto mt-24 max-w-6xl px-4">
+        <div className="max-w-md">
           <h2 className="text-sm font-semibold uppercase tracking-[0.15em] text-gray-500 dark:text-gray-400">
-            Browse by subject
+            Everything the day-to-day needs
           </h2>
-          <Link
-            to="/tutors"
-            className="text-sm font-medium text-primary-600 hover:underline dark:text-primary-400"
-          >
-            See all tutors →
-          </Link>
         </div>
-        <div className="mt-4 flex gap-2 overflow-x-auto pb-2 [-ms-overflow-style:none] [scrollbar-width:none] [&::-webkit-scrollbar]:hidden">
-          {SUBJECTS.map((s) => (
-            <Link
-              key={s}
-              to={`/tutors?subject=${encodeURIComponent(s)}`}
-              className="shrink-0 rounded-lg border border-gray-200 bg-white px-4 py-2.5 text-sm font-medium text-gray-700 transition-colors hover:border-primary-500 hover:bg-primary-50 hover:text-primary-700 dark:border-gray-800 dark:bg-gray-900 dark:text-gray-300 dark:hover:border-primary-500 dark:hover:bg-primary-900/20 dark:hover:text-primary-300"
-            >
-              {s}
-            </Link>
+        <div className="mt-6 grid gap-8 sm:grid-cols-3">
+          {FEATURES.map((f) => (
+            <div key={f.title}>
+              <h3 className="font-semibold text-gray-900 dark:text-gray-100">{f.title}</h3>
+              <p className="mt-1.5 text-sm leading-relaxed text-gray-600 dark:text-gray-400">
+                {f.desc}
+              </p>
+            </div>
           ))}
         </div>
       </section>
@@ -157,10 +163,10 @@ const Landing = () => {
       <section className="mx-auto mt-24 max-w-6xl px-4">
         <div className="max-w-md">
           <h2 className="text-2xl font-bold tracking-tight text-gray-900 dark:text-gray-100">
-            From sign-up to first lesson
+            From sign-up to first invoice
           </h2>
           <p className="mt-2 text-gray-600 dark:text-gray-400">
-            No agency fees, no phone calls back and forth. Everything happens on the platform.
+            No agency fees, no separate spreadsheets. Everything happens on the platform.
           </p>
         </div>
 
@@ -190,10 +196,10 @@ const Landing = () => {
         <div className="flex flex-col items-start justify-between gap-6 rounded-2xl bg-gray-900 px-8 py-10 sm:flex-row sm:items-center">
           <div>
             <h2 className="text-xl font-semibold text-white">
-              Exams don't wait. Neither should you.
+              Ready to run your tuition business without the spreadsheets?
             </h2>
             <p className="mt-1 text-sm text-gray-400">
-              Create a free account and message a tutor today.
+              Create a free account and set up your first class today.
             </p>
           </div>
           <Link to="/register" className="shrink-0">

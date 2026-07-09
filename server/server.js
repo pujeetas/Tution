@@ -5,6 +5,8 @@ import connectDB from './config/db.js';
 import authRoutes from './routes/authRoutes.js';
 import tutorRoutes from './routes/tutorRoutes.js';
 import bookingRoutes from './routes/bookingRoutes.js';
+import organizationRoutes from './routes/organizationRoutes.js';
+import studentRoutes from './routes/studentRoutes.js';
 import { notFound, errorHandler } from './middleware/errorHandler.js';
 
 dotenv.config();
@@ -26,6 +28,8 @@ app.get('/api/health', (req, res) => {
 app.use('/api/auth', authRoutes);
 app.use('/api/tutors', tutorRoutes);
 app.use('/api/bookings', bookingRoutes);
+app.use('/api/organizations', organizationRoutes);
+app.use('/api/students', studentRoutes);
 
 app.use(notFound);
 app.use(errorHandler);

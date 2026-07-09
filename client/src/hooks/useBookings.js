@@ -2,6 +2,7 @@ import { useState, useEffect, useCallback } from 'react';
 import {
   fetchMyBookings,
   updateBookingStatus,
+  payForBooking,
   getErrorMessage,
 } from '../services/api.js';
 
@@ -33,7 +34,12 @@ const useBookings = () => {
     setBookings((prev) => prev.map((b) => (b._id === id ? res.data.booking : b)));
   };
 
-  return { bookings, loading, error, refetch: load, setStatus };
+  const pay = async (id) => {
+    const res = await payForBooking(id);
+    setBookings((prev) => prev.map((b) => (b._id === id ? res.data.booking : b)));
+  };
+
+  return { bookings, loading, error, refetch: load, setStatus, pay };
 };
 
 export default useBookings;

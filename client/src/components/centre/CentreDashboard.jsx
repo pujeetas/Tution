@@ -1,30 +1,24 @@
-import { useState, useEffect } from 'react';
+import { useState } from 'react';
 import useAuth from '../../hooks/useAuth.js';
 import useBookings from '../../hooks/useBookings.js';
-import TutorProfileForm from './TutorProfileForm.jsx';
+import useStaff from '../../hooks/useStaff.js';
+import StaffTutorForm from './StaffTutorForm.jsx';
+import CentreInfo from './CentreInfo.jsx';
 import BookingCard from '../booking/BookingCard.jsx';
 import LoadingSpinner from '../common/LoadingSpinner.jsx';
 import AddedStudentsPanel from '../students/AddedStudentsPanel.jsx';
-import { fetchMyTutorProfile, getErrorMessage } from '../../services/api.js';
+import { getErrorMessage } from '../../services/api.js';
 
-const TABS = ['Bookings', 'Students', 'My Profile'];
+const TABS = ['Bookings', 'Staff Tutors', 'Students', 'Organization'];
 
-const TutorDashboard = () => {
+const CentreDashboard = () => {
   const { user } = useAuth();
   const { bookings, loading: bookingsLoading, error: bookingsError, setStatus } = useBookings();
+  const { staff, loading: staffLoading, error: staffError, refetch: refetchStaff } = useStaff();
 
   const [tab, setTab] = useState('Bookings');
-  const [profile, setProfile] = useState(null);
-  const [profileLoading, setProfileLoading] = useState(true);
   const [updating, setUpdating] = useState(false);
   const [actionError, setActionError] = useState('');
-
-  useEffect(() => {
-    fetchMyTutorProfile()
-      .then((res) => setProfile(res.data.profile))
-      .catch(() => setProfile(null))
-      .finally(() => setProfileLoading(false));
-  }, []);
 
   const handleStatusChange = async (id, status) => {
     setActionError('');
@@ -42,21 +36,12 @@ const TutorDashboard = () => {
   const confirmed = bookings.filter((b) => b.status === 'Confirmed');
   const others = bookings.filter((b) => b.status !== 'Pending' && b.status !== 'Confirmed');
 
-  const needsProfile = !profileLoading && !profile;
-
   return (
     <div className="space-y-6">
       <div>
-        <h1 className="text-2xl font-bold text-gray-900 dark:text-gray-100">Tutor Dashboard</h1>
+        <h1 className="text-2xl font-bold text-gray-900 dark:text-gray-100">Centre Dashboard</h1>
         <p className="text-sm text-gray-500 dark:text-gray-400">Welcome back, {user.name}</p>
       </div>
-
-      {needsProfile && (
-        <p className="rounded-lg bg-yellow-50 px-4 py-3 text-sm text-yellow-800 dark:bg-yellow-900/20 dark:text-yellow-400">
-          Your profile is not set up yet — parents can't find you until it is. Fill in the
-          "My Profile" tab to appear in search results.
-        </p>
-      )}
 
       <div className="flex gap-1 border-b border-gray-200 dark:border-gray-800">
         {TABS.map((t) => (
@@ -75,12 +60,17 @@ const TutorDashboard = () => {
                 {pending.length}
               </span>
             )}
+            {t === 'Staff Tutors' && staff.length > 0 && (
+              <span className="ml-1.5 rounded-full bg-gray-100 px-2 py-0.5 text-xs font-semibold text-gray-600 dark:bg-gray-800 dark:text-gray-400">
+                {staff.length}
+              </span>
+            )}
           </button>
         ))}
       </div>
 
-      {tab === 'Bookings' ? (
-        bookingsLoading ? (
+      {tab === 'Bookings' &&
+        (bookingsLoading ? (
           <LoadingSpinner message="Loading bookings..." />
         ) : (
           <div className="space-y-8">
@@ -97,7 +87,7 @@ const TutorDashboard = () => {
 
             {bookings.length === 0 && (
               <p className="rounded-xl border border-dashed border-gray-300 bg-white px-4 py-8 text-center text-sm text-gray-500 dark:border-gray-700 dark:bg-gray-900 dark:text-gray-400">
-                No bookings yet. Once parents book you, requests will appear here.
+                No bookings yet across your staff tutors.
               </p>
             )}
 
@@ -117,7 +107,7 @@ const TutorDashboard = () => {
                         <BookingCard
                           key={b._id}
                           booking={b}
-                          viewerRole="tutor"
+                          viewerRole="centre"
                           onStatusChange={handleStatusChange}
                           updating={updating}
                         />
@@ -127,18 +117,54 @@ const TutorDashboard = () => {
                 )
             )}
           </div>
-        )
-      ) : tab === 'Students' ? (
-        <AddedStudentsPanel />
-      ) : profileLoading ? (
-        <LoadingSpinner message="Loading profile..." />
-      ) : (
-        <div className="max-w-2xl rounded-xl border border-gray-200 bg-white p-6 shadow-sm dark:border-gray-800 dark:bg-gray-900">
-          <TutorProfileForm profile={profile} onSaved={setProfile} />
+        ))}
+
+      {tab === 'Staff Tutors' && (
+        <div className="grid gap-6 lg:grid-cols-[1fr_320px]">
+          <div className="rounded-xl border border-gray-200 bg-white p-6 shadow-sm dark:border-gray-800 dark:bg-gray-900">
+            <h3 className="mb-4 text-sm font-semibold uppercase tracking-wide text-gray-400 dark:text-gray-500">
+              Add Staff Tutor
+            </h3>
+            <StaffTutorForm onCreated={refetchStaff} />
+          </div>
+
+          <aside className="space-y-3">
+            <h3 className="text-sm font-semibold uppercase tracking-wide text-gray-400 dark:text-gray-500">
+              Your Tutors
+            </h3>
+            {staffLoading ? (
+              <LoadingSpinner message="Loading staff..." />
+            ) : staffError ? (
+              <p className="rounded-lg bg-red-50 px-4 py-3 text-sm text-red-700 dark:bg-red-900/20 dark:text-red-400">
+                {staffError}
+              </p>
+            ) : staff.length === 0 ? (
+              <p className="rounded-xl border border-dashed border-gray-300 bg-white px-4 py-6 text-center text-sm text-gray-500 dark:border-gray-700 dark:bg-gray-900 dark:text-gray-400">
+                No staff tutors yet.
+              </p>
+            ) : (
+              staff.map((s) => (
+                <div
+                  key={s._id}
+                  className="rounded-xl border border-gray-200 bg-white p-4 shadow-sm dark:border-gray-800 dark:bg-gray-900"
+                >
+                  <p className="font-medium text-gray-900 dark:text-gray-100">{s.user?.name}</p>
+                  <p className="text-sm text-gray-500 dark:text-gray-400">{s.user?.email}</p>
+                  <p className="mt-1 text-sm text-gray-600 dark:text-gray-400">
+                    {s.subjects.join(', ')} · S${s.hourlyRate}/hr
+                  </p>
+                </div>
+              ))
+            )}
+          </aside>
         </div>
       )}
+
+      {tab === 'Students' && <AddedStudentsPanel />}
+
+      {tab === 'Organization' && <CentreInfo />}
     </div>
   );
 };
 
-export default TutorDashboard;
+export default CentreDashboard;

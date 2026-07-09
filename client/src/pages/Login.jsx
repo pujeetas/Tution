@@ -4,6 +4,7 @@ import useAuth from '../hooks/useAuth.js';
 import Button from '../components/common/Button.jsx';
 import Input from '../components/common/Input.jsx';
 import { getErrorMessage } from '../services/api.js';
+import { getPostAuthPath } from '../utils/constants.js';
 
 const Login = () => {
   const { login } = useAuth();
@@ -22,9 +23,7 @@ const Login = () => {
     setSubmitting(true);
     try {
       const user = await login(form);
-      const redirect =
-        location.state?.from ||
-        (user.role === 'tutor' ? '/dashboard/tutor' : '/dashboard/parent');
+      const redirect = location.state?.from || getPostAuthPath(user);
       navigate(redirect, { replace: true });
     } catch (err) {
       setError(getErrorMessage(err));

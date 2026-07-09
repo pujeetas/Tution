@@ -3,16 +3,15 @@ import { Link, useLocation } from 'react-router-dom';
 import useAuth from '../../hooks/useAuth.js';
 import useBookings from '../../hooks/useBookings.js';
 import BookingCard from '../booking/BookingCard.jsx';
-import ChildDetails from './ChildDetails.jsx';
+import StudentsPanel from './StudentsPanel.jsx';
 import LoadingSpinner from '../common/LoadingSpinner.jsx';
-import Button from '../common/Button.jsx';
 import { isUpcoming } from '../../utils/formatDate.js';
 import { getErrorMessage } from '../../services/api.js';
 
 const ParentDashboard = () => {
   const { user } = useAuth();
   const location = useLocation();
-  const { bookings, loading, error, setStatus } = useBookings();
+  const { bookings, loading, error, setStatus, pay } = useBookings();
   const [updating, setUpdating] = useState(false);
   const [actionError, setActionError] = useState('');
 
@@ -28,6 +27,21 @@ const ParentDashboard = () => {
     }
   };
 
+  const handlePay = async (id) => {
+    setActionError('');
+    setUpdating(true);
+    try {
+      await pay(id);
+    } catch (err) {
+      setActionError(getErrorMessage(err));
+    } finally {
+      setUpdating(false);
+    }
+  };
+
+  const outstanding = bookings.filter(
+    (b) => b.status === 'Confirmed' && b.paymentStatus === 'unpaid'
+  );
   const upcoming = bookings.filter(
     (b) => isUpcoming(b.date) && b.status !== 'Cancelled' && b.status !== 'Completed'
   );
@@ -37,16 +51,13 @@ const ParentDashboard = () => {
 
   return (
     <div className="space-y-6">
-      <div className="flex flex-wrap items-center justify-between gap-3">
-        <div>
-          <h1 className="text-2xl font-bold text-gray-900 dark:text-gray-100">
-            Welcome back, {user.name}
-          </h1>
-          <p className="text-sm text-gray-500 dark:text-gray-400">Manage your tuition bookings</p>
-        </div>
-        <Link to="/tutors">
-          <Button>Find a Tutor</Button>
-        </Link>
+      <div>
+        <h1 className="text-2xl font-bold text-gray-900 dark:text-gray-100">
+          Welcome back, {user.name}
+        </h1>
+        <p className="text-sm text-gray-500 dark:text-gray-400">
+          Your children's sessions and payments
+        </p>
       </div>
 
       {location.state?.message && (
@@ -67,20 +78,33 @@ const ParentDashboard = () => {
 
       <div className="grid gap-6 lg:grid-cols-[1fr_280px]">
         <div className="space-y-8">
+          {outstanding.length > 0 && (
+            <section>
+              <h2 className="mb-3 text-lg font-semibold text-gray-900 dark:text-gray-100">
+                Outstanding Payments ({outstanding.length})
+              </h2>
+              <div className="space-y-4">
+                {outstanding.map((b) => (
+                  <BookingCard
+                    key={b._id}
+                    booking={b}
+                    viewerRole="parent"
+                    onStatusChange={handleStatusChange}
+                    onPay={handlePay}
+                    updating={updating}
+                  />
+                ))}
+              </div>
+            </section>
+          )}
+
           <section>
             <h2 className="mb-3 text-lg font-semibold text-gray-900 dark:text-gray-100">
               Upcoming Sessions ({upcoming.length})
             </h2>
             {upcoming.length === 0 ? (
               <p className="rounded-xl border border-dashed border-gray-300 bg-white px-4 py-8 text-center text-sm text-gray-500 dark:border-gray-700 dark:bg-gray-900 dark:text-gray-400">
-                No upcoming sessions.{' '}
-                <Link
-                  to="/tutors"
-                  className="font-medium text-primary-600 hover:underline dark:text-primary-400"
-                >
-                  Browse tutors
-                </Link>{' '}
-                to book one.
+                No upcoming sessions yet. Your tutor or centre will schedule these for you.
               </p>
             ) : (
               <div className="space-y-4">
@@ -90,6 +114,7 @@ const ParentDashboard = () => {
                     booking={b}
                     viewerRole="parent"
                     onStatusChange={handleStatusChange}
+                    onPay={handlePay}
                     updating={updating}
                   />
                 ))}
@@ -113,8 +138,14 @@ const ParentDashboard = () => {
           </section>
         </div>
 
-        <aside>
-          <ChildDetails user={user} />
+        <aside className="space-y-4">
+          <StudentsPanel />
+          <p className="text-center text-xs text-gray-400 dark:text-gray-500">
+            Don't have a tutor yet?{' '}
+            <Link to="/tutors" className="font-medium text-primary-600 hover:underline dark:text-primary-400">
+              Browse tutors
+            </Link>
+          </p>
         </aside>
       </div>
     </div>

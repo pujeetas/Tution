@@ -27,6 +27,12 @@ const tutorProfileSchema = new mongoose.Schema(
       required: true,
       unique: true,
     },
+    // Set when this tutor is staff of a tuition centre; null for independent tutors
+    organization: {
+      type: mongoose.Schema.Types.ObjectId,
+      ref: 'Organization',
+      default: null,
+    },
     subjects: {
       type: [{ type: String, enum: SUBJECTS }],
       validate: [(arr) => arr.length > 0, 'At least one subject is required'],

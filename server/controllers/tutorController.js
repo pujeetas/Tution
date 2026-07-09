@@ -1,4 +1,5 @@
 import TutorProfile, { SUBJECTS, LEVELS, TEACHING_MODES } from '../models/TutorProfile.js';
+import Booking from '../models/Booking.js';
 
 // @desc    List tutors with filters
 // @route   GET /api/tutors?subject=Math&level=PSLE&mode=online&minRate=20&maxRate=80
@@ -46,6 +47,29 @@ export const getTutorById = async (req, res, next) => {
     }
 
     res.json({ success: true, tutor });
+  } catch (error) {
+    next(error);
+  }
+};
+
+// @desc    Get dates the tutor already has bookings on (busy indicator only)
+// @route   GET /api/tutors/:id/busy-dates
+// @access  Public
+export const getTutorBusyDates = async (req, res, next) => {
+  try {
+    const tutorProfile = await TutorProfile.findById(req.params.id).select('user');
+
+    if (!tutorProfile) {
+      res.status(404);
+      throw new Error('Tutor profile not found');
+    }
+
+    const bookings = await Booking.find({
+      tutor: tutorProfile.user,
+      status: { $ne: 'Cancelled' },
+    }).select('date durationHours -_id');
+
+    res.json({ success: true, busyDates: bookings });
   } catch (error) {
     next(error);
   }

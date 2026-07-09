@@ -17,6 +17,26 @@ export const LEVELS = ['PSLE', 'O-Levels', 'A-Levels'];
 
 export const CHILD_LEVELS = ['Primary', 'Secondary', 'JC'];
 
+export const ROLES = ['parent', 'tutor', 'centre'];
+
+export const DASHBOARD_PATHS = {
+  parent: '/dashboard/parent',
+  tutor: '/dashboard/tutor',
+  centre: '/dashboard/centre',
+};
+
+export const getDashboardPath = (role) => DASHBOARD_PATHS[role] || '/dashboard/parent';
+
+// Where to send a user right after login/register — the one-time "Getting
+// Started" step for tutors/centres that haven't completed it yet, otherwise
+// their normal dashboard.
+export const getPostAuthPath = (user) => {
+  if (['tutor', 'centre'].includes(user.role) && !user.onboardingComplete) {
+    return '/onboarding';
+  }
+  return getDashboardPath(user.role);
+};
+
 export const TEACHING_MODES = [
   { value: 'online', label: 'Online' },
   { value: 'in-person', label: 'In-person' },
@@ -42,4 +62,9 @@ export const STATUS_COLORS = {
   Confirmed: 'bg-blue-100 text-blue-800 dark:bg-blue-900/30 dark:text-blue-400',
   Completed: 'bg-green-100 text-green-800 dark:bg-green-900/30 dark:text-green-400',
   Cancelled: 'bg-gray-100 text-gray-600 dark:bg-gray-800 dark:text-gray-400',
+};
+
+export const PAYMENT_STATUS_COLORS = {
+  unpaid: 'bg-gray-100 text-gray-600 dark:bg-gray-800 dark:text-gray-400',
+  paid: 'bg-green-100 text-green-800 dark:bg-green-900/30 dark:text-green-400',
 };

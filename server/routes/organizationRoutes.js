@@ -1,0 +1,19 @@
+import express from 'express';
+import {
+  getMyOrganization,
+  updateMyOrganization,
+  createStaffTutor,
+  listStaff,
+  getStaffOptions,
+} from '../controllers/organizationController.js';
+import { protect, authorize } from '../middleware/authMiddleware.js';
+
+const router = express.Router();
+
+router.get('/me', protect, authorize('centre'), getMyOrganization);
+router.patch('/me', protect, authorize('centre'), updateMyOrganization);
+router.get('/me/staff', protect, authorize('centre'), listStaff);
+router.post('/staff', protect, authorize('centre'), createStaffTutor);
+router.get('/meta/options', protect, authorize('centre'), getStaffOptions);
+
+export default router;

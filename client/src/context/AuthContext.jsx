@@ -53,8 +53,17 @@ export const AuthProvider = ({ children }) => {
     setUser(null);
   }, []);
 
+  // Patch the cached user after an update that doesn't require a fresh token (e.g. onboarding)
+  const updateUser = useCallback((patch) => {
+    setUser((prev) => {
+      const next = { ...prev, ...patch };
+      localStorage.setItem('user', JSON.stringify(next));
+      return next;
+    });
+  }, []);
+
   return (
-    <AuthContext.Provider value={{ user, loading, login, register, logout }}>
+    <AuthContext.Provider value={{ user, loading, login, register, logout, updateUser }}>
       {children}
     </AuthContext.Provider>
   );
