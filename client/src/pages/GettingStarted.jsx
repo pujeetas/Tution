@@ -1,9 +1,10 @@
-import { useState } from 'react';
+import { useState, useEffect } from 'react';
 import { useNavigate } from 'react-router-dom';
 import useAuth from '../hooks/useAuth.js';
 import Button from '../components/common/Button.jsx';
 import FieldSection from '../components/onboarding/FieldSection.jsx';
 import AddedStudentsPanel from '../components/students/AddedStudentsPanel.jsx';
+import AddAdminsStep from '../components/onboarding/AddAdminsStep.jsx';
 import { completeOnboarding, saveFormConfig, getErrorMessage } from '../services/api.js';
 import { getDashboardPath } from '../utils/constants.js';
 import { buildDefaultFormConfig } from '../utils/formTemplates.js';
@@ -21,17 +22,35 @@ const FORM_TYPE_META = {
   admin: { title: 'Admin Form' },
 };
 
+// Checklist position (which step is active, which are done, the admin-form
+// toggle, and which Add Users sub-view) is saved per-user so that navigating
+// away mid-setup — e.g. clicking "Dashboard" in the sidebar, which stays
+// live throughout onboarding — and coming back doesn't reset progress to
+// the very start. Deeper Form Builder editor state isn't persisted here
+// since it's already recoverable from the server (user.formConfig).
+const progressKey = (userId) => `onboarding-progress-${userId}`;
+
+const loadSavedProgress = (userId) => {
+  try {
+    const raw = localStorage.getItem(progressKey(userId));
+    return raw ? JSON.parse(raw) : null;
+  } catch {
+    return null;
+  }
+};
+
 const GettingStarted = () => {
   const { user, updateUser } = useAuth();
   const navigate = useNavigate();
   const isCentre = user.role === 'centre';
+  const saved = loadSavedProgress(user.id);
 
   // Which checklist item is active, and which have been completed this session
-  const [step, setStep] = useState('forms'); // 'forms' | 'addUsers'
-  const [completed, setCompleted] = useState({ forms: false, addUsers: false });
+  const [step, setStep] = useState(saved?.step || 'forms'); // 'forms' | 'addUsers'
+  const [completed, setCompleted] = useState(saved?.completed || { forms: false, addUsers: false });
 
   // Step 1: which forms this account uses at all
-  const [adminForm, setAdminForm] = useState(isCentre);
+  const [adminForm, setAdminForm] = useState(saved?.adminForm ?? isCentre);
 
   // Step 1 sub-flow (via "Customise Forms"): the field-builder
   const [formsView, setFormsView] = useState('checklist'); // 'checklist' | 'formType' | 'editor'
@@ -43,10 +62,17 @@ const GettingStarted = () => {
   const [activeType, setActiveType] = useState('student');
 
   // Step 2 sub-flow: Add Users
-  const [addUsersView, setAddUsersView] = useState('intro'); // 'intro' | 'form'
+  const [addUsersView, setAddUsersView] = useState(saved?.addUsersView || 'intro'); // 'intro' | 'students' | 'admins'
 
   const [error, setError] = useState('');
   const [submitting, setSubmitting] = useState(false);
+
+  useEffect(() => {
+    localStorage.setItem(
+      progressKey(user.id),
+      JSON.stringify({ step, completed, adminForm, addUsersView })
+    );
+  }, [user.id, step, completed, adminForm, addUsersView]);
 
   const availableTypes = isCentre && adminForm ? ['student', 'admin'] : ['student'];
   const allPublished = availableTypes.every((t) => published[t]);
@@ -103,6 +129,7 @@ const GettingStarted = () => {
     try {
       const res = await completeOnboarding({ admin: adminForm });
       updateUser(res.data.user);
+      localStorage.removeItem(progressKey(user.id));
       navigate(getDashboardPath(user.role));
     } catch (err) {
       setError(getErrorMessage(err));
@@ -116,7 +143,7 @@ const GettingStarted = () => {
   };
 
   return (
-    <div className="mx-auto max-w-3xl pt-8 text-center">
+    <div className="mx-auto max-w-5xl pt-8 text-center">
       <h1 className="text-3xl font-bold text-gray-900 dark:text-gray-100">
         Welcome to your admin dashboard 🎉
       </h1>
@@ -178,8 +205,10 @@ const GettingStarted = () => {
           </ul>
         </div>
 
-        {/* Detail panel */}
-        <div className="p-6">
+        {/* Detail panel — min-w-0 lets wide content (e.g. the Students
+            table) shrink to fit instead of forcing this grid column past
+            its own width, which was cutting off the table's Next button */}
+        <div className="min-w-0 p-6">
           {error && (
             <p className="mb-4 rounded-lg bg-red-50 px-3 py-2 text-sm text-red-700 dark:bg-red-900/20 dark:text-red-400">
               {error}
@@ -355,26 +384,32 @@ const GettingStarted = () => {
             <>
               <h2 className="font-semibold text-gray-900 dark:text-gray-100">Add Users</h2>
               <p className="mt-1.5 text-sm text-gray-500 dark:text-gray-400">
-                Add profiles for your students. Populate the necessary details to ensure proper
-                record-keeping and communication.
+                Add profiles for your{isCentre && adminForm ? ' students and admins' : ' students'}.
+                Populate the necessary details to ensure proper record-keeping and communication.
               </p>
 
-              <div className="mt-4 space-y-2">
-                <label className="flex items-center gap-2 text-sm text-gray-700 dark:text-gray-300">
-                  <input
-                    type="checkbox"
-                    checked
-                    disabled
-                    className="h-4 w-4 rounded border-gray-300"
-                  />
-                  Add Students
-                </label>
+              <div className="mt-4 grid gap-3 sm:grid-cols-2">
+                <button
+                  type="button"
+                  onClick={() => setAddUsersView('students')}
+                  className="rounded-lg border border-gray-200 p-4 text-left transition-colors hover:border-primary-400 dark:border-gray-700 dark:hover:border-primary-500"
+                >
+                  <p className="font-semibold text-gray-900 dark:text-gray-100">Add Students</p>
+                  <p className="text-sm text-gray-500 dark:text-gray-400">
+                    Add student profiles and their parent accounts.
+                  </p>
+                </button>
                 {isCentre && adminForm && (
-                  <label className="flex items-center gap-2 text-sm text-gray-400 dark:text-gray-600">
-                    <input type="checkbox" checked disabled className="h-4 w-4 rounded" />
-                    Add Admins — manage staff tutors anytime from your dashboard's Staff Tutors
-                    tab
-                  </label>
+                  <button
+                    type="button"
+                    onClick={() => setAddUsersView('admins')}
+                    className="rounded-lg border border-gray-200 p-4 text-left transition-colors hover:border-primary-400 dark:border-gray-700 dark:hover:border-primary-500"
+                  >
+                    <p className="font-semibold text-gray-900 dark:text-gray-100">Add Admins</p>
+                    <p className="text-sm text-gray-500 dark:text-gray-400">
+                      Add other admins to help manage your organization.
+                    </p>
+                  </button>
                 )}
               </div>
 
@@ -382,18 +417,16 @@ const GettingStarted = () => {
                 <button
                   type="button"
                   onClick={finishAddUsers}
+                  disabled={submitting}
                   className="text-sm font-medium text-gray-500 hover:text-gray-700 dark:text-gray-400 dark:hover:text-gray-200"
                 >
-                  Skip for now
+                  {submitting ? 'Saving...' : 'Skip for now'}
                 </button>
-                <Button className="ml-auto" onClick={() => setAddUsersView('form')}>
-                  Add Users
-                </Button>
               </div>
             </>
           )}
 
-          {step === 'addUsers' && addUsersView === 'form' && (
+          {step === 'addUsers' && addUsersView === 'students' && (
             <>
               <AddedStudentsPanel />
               <div className="mt-6 flex flex-wrap items-center gap-3">
@@ -405,7 +438,25 @@ const GettingStarted = () => {
                   Back
                 </button>
                 <Button className="ml-auto" onClick={finishAddUsers} disabled={submitting}>
-                  {submitting ? 'Saving...' : 'Finish setup'}
+                  {submitting ? 'Saving...' : 'Go to Dashboard'}
+                </Button>
+              </div>
+            </>
+          )}
+
+          {step === 'addUsers' && addUsersView === 'admins' && (
+            <>
+              <AddAdminsStep />
+              <div className="mt-6 flex flex-wrap items-center gap-3">
+                <button
+                  type="button"
+                  onClick={() => setAddUsersView('intro')}
+                  className="text-sm font-medium text-gray-500 hover:text-gray-700 dark:text-gray-400 dark:hover:text-gray-200"
+                >
+                  Back
+                </button>
+                <Button className="ml-auto" onClick={finishAddUsers} disabled={submitting}>
+                  {submitting ? 'Saving...' : 'Go to Dashboard'}
                 </Button>
               </div>
             </>

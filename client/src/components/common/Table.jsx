@@ -1,7 +1,10 @@
 // Styled table shell — children are raw <thead>/<tbody> markup from the caller.
+// `min-w-full` (not `w-full`) so the table can grow past its container and
+// let the wrapper's overflow-x-auto scroll it, instead of squeezing columns
+// to fit — matters in narrow contexts like the onboarding panel embed.
 const Table = ({ children, className = '' }) => (
   <div className="overflow-x-auto rounded-xl border border-gray-200 dark:border-gray-800">
-    <table className={`w-full text-left text-sm ${className}`}>{children}</table>
+    <table className={`min-w-full text-left text-sm ${className}`}>{children}</table>
   </div>
 );
 
