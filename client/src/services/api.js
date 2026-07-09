@@ -68,8 +68,14 @@ export const updateStudent = (id, data) => api.patch(`/students/${id}`, data);
 export const deleteStudent = (id) => api.delete(`/students/${id}`);
 
 // ---- Students added by a tutor/centre on a parent's behalf ----
-export const fetchAddedStudents = () => api.get('/students/added');
+export const fetchAddedStudents = (filters = {}) => {
+  const params = Object.fromEntries(
+    Object.entries(filters).filter(([, v]) => v !== '' && v != null)
+  );
+  return api.get('/students/added', { params });
+};
 export const addStudentForParent = (data) => api.post('/students/add-for-parent', data);
+export const bulkDeleteStudents = (ids) => api.post('/students/bulk-delete', { ids });
 
 // Extract a readable message from an axios error
 export const getErrorMessage = (error) =>

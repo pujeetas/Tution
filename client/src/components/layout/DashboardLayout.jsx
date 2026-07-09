@@ -15,7 +15,10 @@ const DashboardLayout = () => {
       <Sidebar />
       <div className="flex flex-1 flex-col">
         <header className="flex items-center justify-end gap-4 border-b border-gray-200 bg-white px-6 py-3 dark:border-gray-800 dark:bg-gray-900">
-          <span className="text-sm text-gray-500 dark:text-gray-400">Hi, {user.name.split(' ')[0]}</span>
+          <div className="text-right leading-tight">
+            <p className="text-sm font-medium text-gray-900 dark:text-gray-100">{user.name}</p>
+            <p className="text-xs capitalize text-gray-500 dark:text-gray-400">{user.role}</p>
+          </div>
           <ThemeToggle />
         </header>
         <main className="mx-auto w-full max-w-6xl flex-1 px-6 py-8">

@@ -13,21 +13,71 @@ export const listMyStudents = async (req, res, next) => {
   }
 };
 
-// @desc    List students this tutor/centre has added (org-wide for centres)
+// @desc    List students this tutor/centre has added (org-wide for centres),
+//          with search/level/status filtering and pagination
 // @route   GET /api/students/added
 // @access  Private (tutor, centre)
 export const listAddedStudents = async (req, res, next) => {
   try {
-    const filter =
+    const { search, level, status, page = 1, limit = 10 } = req.query;
+
+    const scope =
       req.user.role === 'centre' && req.user.organization
         ? { organization: req.user.organization }
         : { addedBy: req.user._id };
 
-    const students = await Student.find(filter)
-      .populate('parent', 'name email phone')
-      .sort({ createdAt: -1 });
+    const filter = { ...scope };
+    if (level) filter.level = level;
+    if (status) filter.status = status;
+    if (search) {
+      const re = new RegExp(search.trim(), 'i');
+      filter.$or = [{ name: re }, { phone: re }];
+    }
 
-    res.json({ success: true, count: students.length, students });
+    const pageNum = Math.max(1, Number(page) || 1);
+    const limitNum = Math.max(1, Number(limit) || 10);
+
+    const [students, total] = await Promise.all([
+      Student.find(filter)
+        .populate('parent', 'name email phone')
+        .sort({ createdAt: -1 })
+        .skip((pageNum - 1) * limitNum)
+        .limit(limitNum),
+      Student.countDocuments(filter),
+    ]);
+
+    res.json({
+      success: true,
+      students,
+      total,
+      page: pageNum,
+      pages: Math.max(1, Math.ceil(total / limitNum)),
+      limit: limitNum,
+    });
+  } catch (error) {
+    next(error);
+  }
+};
+
+// @desc    Bulk-delete students this tutor/centre added (org-scoped for centres)
+// @route   POST /api/students/bulk-delete
+// @access  Private (tutor, centre)
+export const bulkDeleteStudents = async (req, res, next) => {
+  try {
+    const { ids } = req.body;
+
+    if (!Array.isArray(ids) || ids.length === 0) {
+      res.status(400);
+      throw new Error('ids must be a non-empty array');
+    }
+
+    const scope =
+      req.user.role === 'centre' && req.user.organization
+        ? { organization: req.user.organization }
+        : { addedBy: req.user._id };
+
+    const result = await Student.deleteMany({ _id: { $in: ids }, ...scope });
+    res.json({ success: true, deletedCount: result.deletedCount });
   } catch (error) {
     next(error);
   }

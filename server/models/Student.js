@@ -31,6 +31,16 @@ const studentSchema = new mongoose.Schema(
       ref: 'Organization',
       default: null,
     },
+    status: {
+      type: String,
+      enum: ['Active', 'Inactive'],
+      default: 'Active',
+    },
+    phone: {
+      type: String,
+      trim: true,
+      default: '',
+    },
   },
   { timestamps: true }
 );

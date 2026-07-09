@@ -6,6 +6,7 @@ import {
   deleteStudent,
   listAddedStudents,
   addStudentForParent,
+  bulkDeleteStudents,
 } from '../controllers/studentController.js';
 import { protect, authorize } from '../middleware/authMiddleware.js';
 
@@ -18,5 +19,6 @@ router.delete('/:id', protect, authorize('parent'), deleteStudent);
 
 router.get('/added', protect, authorize('tutor', 'centre'), listAddedStudents);
 router.post('/add-for-parent', protect, authorize('tutor', 'centre'), addStudentForParent);
+router.post('/bulk-delete', protect, authorize('tutor', 'centre'), bulkDeleteStudents);
 
 export default router;

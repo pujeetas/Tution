@@ -68,3 +68,10 @@ export const PAYMENT_STATUS_COLORS = {
   unpaid: 'bg-gray-100 text-gray-600 dark:bg-gray-800 dark:text-gray-400',
   paid: 'bg-green-100 text-green-800 dark:bg-green-900/30 dark:text-green-400',
 };
+
+export const STUDENT_STATUSES = ['Active', 'Inactive'];
+
+export const STUDENT_STATUS_COLORS = {
+  Active: 'bg-green-100 text-green-800 dark:bg-green-900/30 dark:text-green-400',
+  Inactive: 'bg-gray-100 text-gray-600 dark:bg-gray-800 dark:text-gray-400',
+};
