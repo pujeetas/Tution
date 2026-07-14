@@ -59,6 +59,7 @@ export const fetchMyOrganization = () => api.get('/organizations/me');
 export const saveMyOrganization = (data) => api.patch('/organizations/me', data);
 export const fetchMyStaff = () => api.get('/organizations/me/staff');
 export const createStaffTutor = (data) => api.post('/organizations/staff', data);
+export const bulkDeleteStaff = (ids) => api.post('/organizations/staff/bulk-delete', { ids });
 export const fetchStaffOptions = () => api.get('/organizations/meta/options');
 export const fetchOrgAdmins = (filters = {}) => {
   const params = Object.fromEntries(
@@ -83,7 +84,27 @@ export const fetchAddedStudents = (filters = {}) => {
   return api.get('/students/added', { params });
 };
 export const addStudentForParent = (data) => api.post('/students/add-for-parent', data);
+export const updateAddedStudent = (id, data) => api.patch(`/students/added/${id}`, data);
 export const bulkDeleteStudents = (ids) => api.post('/students/bulk-delete', { ids });
+
+// ---- Classes ----
+export const fetchClasses = (filters = {}) => {
+  const params = Object.fromEntries(
+    Object.entries(filters).filter(([, v]) => v !== '' && v != null)
+  );
+  return api.get('/classes', { params });
+};
+export const createClass = (data) => api.post('/classes', data);
+export const updateClass = (id, data) => api.patch(`/classes/${id}`, data);
+export const bulkDeleteClasses = (ids) => api.post('/classes/bulk-delete', { ids });
+export const fetchClassTutorOptions = () => api.get('/classes/meta/tutor-options');
+export const fetchClassById = (id) => api.get(`/classes/${id}`);
+
+// ---- Attendance ----
+export const fetchAttendanceSession = (classId, date) =>
+  api.get('/attendance/session', { params: { classId, date } });
+export const saveAttendanceSession = (data) => api.put('/attendance/session', data);
+export const fetchAttendanceSessions = (classId) => api.get('/attendance', { params: { classId } });
 
 // Extract a readable message from an axios error
 export const getErrorMessage = (error) =>

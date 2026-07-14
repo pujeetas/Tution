@@ -80,14 +80,15 @@ Same shell, title "Add a New Event." Fields: Class Name* (reused label — likel
 
 **Purpose**: Onboarding checklist shown to a new org admin on first login to guide them through setup.
 
-- Heading: "Welcome to your admin dashboard 🎉 — Let's complete these simple steps to get your classes up and running."
-- Sidebar checklist "Getting Started" with a progress bar (e.g. "1/5", "4/5") and ordered tasks:
+- Heading: "Welcome to your admin dashboard 🎉 — Let's complete these simple steps to get your classes up and running." (Confirmed via node `688-36284`: alt subtitle copy on the sidebar checklist itself reads "Let's complete these simple steps to get your organisation up and running" — the two headings are near-duplicates, use either.)
+- Sidebar checklist "Getting Started" with a progress bar (e.g. "1/5", "4/5", "2/5") and ordered tasks:
   1. **Create Registration Forms** — detail panel offers checkboxes for which forms to set up (Student Form, Admin Form) and two paths: "Customise Forms" (→ Form Builder) or "Continue with templates" (skip customization, use defaults).
   2. **Add Users** — detail panel offers checkboxes (Add Students, Add Admins) and button "Add Users" → user-add flow.
-  3. **Create Classes** — button "Setup Classes" → Add a New Class wizard.
+  3. **Create Classes** — detail panel copy: "Define and schedule your classes, including subjects, timings, and assigned staff or tutors. This will help in organising the curriculum and managing timetables." Button "Setup Classes" → Add a New Class wizard (see field list below).
   4. **Set up Calendar** — copy: "Generate a calendar based on your class schedules." Button "Generate Calendar" (implies calendar auto-populates from class schedules rather than being manually built).
   5. **Configure Finances** — copy: "Set up your finance module to manage billing, invoicing, and payments." Button "Setup Finance".
 - Note: "Calendar is already generated through users' created class schedules" confirms Calendar is largely a derived/read view of Class session schedules, with manual one-off Events layered on top.
+- **Noise flag** (node `688-36284`): between "Add Users" and "Create Classes" the checklist renders two extra rows using a generic `task 6`/`task 7` component instance, both literally labeled "Task name" with a placeholder cube icon — unconfigured component instances, not two additional real tasks. The progress denominator ("/5") and the 5 named tasks above are the real spec; ignore these filler rows.
 
 ---
 
@@ -135,8 +136,10 @@ Triggered when a student/parent (or admin) receives and completes an email invit
 
 ## 9. Classes
 
-- **List view**: columns Class Title, Level, Schedule, Teachers (avatar stack), Students (avatar stack + overflow count e.g. "152+"); "Add A New Class" button; row eye/sms actions.
+- **List view** (confirmed via nodes `688-36721`/`689-44659`): filter bar with "Add A New Class" (primary), "Filters", search ("Search Names, Classes... "), "Options" (gear); result-count row ("Showing 1 - 10 out of 14 classes"). Table columns: leading checkbox, **Class Title** (class name + a schedule-code subtitle line, e.g. "S3E Math Sun @ AMK"), **Level** (e.g. "Secondary 3 Express"), **Schedule** (e.g. "Sun 6PM-8PM"), **Teachers** (plain circular avatar stack — 2 overlapping `Ellipse` avatars, no icon), **Students** (a *different* avatar style — up to 3 graduation-cap badge icons rather than photos — plus an overflow count, e.g. "152+"). Row actions: eye icon (view) and sms/envelope icon (message). Pagination footer "Page 1 of 2".
+  - **Noise flag**: every row in the populated dump (`689-44659`) repeats the exact same placeholder values ("S3E Math Sun @ AMK" / "Secondary 3 Express" / "Sun 6PM-8PM" / "152+") 11 times — it's one row template duplicated for layout purposes, not 11 distinct classes. Treat the column structure as spec, not the sample values.
 - **Grid/Card view ("Class List_Grid View")**: each class renders as a card — class name + subtitle, Students count stat, Tutors count stat, an overflow menu, and a primary card action button **"Mark Attendance"**. Cards paginate ~4 per row.
+- **"Add a New Class" wizard** (confirmed via node `689-45577` — a single-step form, not a multi-step stepper like Add Student/Admin): title "Add a New Class", subtitle "Set up and manage your classes. Add, edit, or delete classes as needed." Fields: **Class Name*** (text/select input), **Lesson Type** (select), **Class Schedule** (date/time input with a calendar-icon affordance), **Levels** (select), **Subjects** (select), **Class Location** (select), **Assign Tutors** (select), **Assign Students** (select), **Description** (free text), **Visibility** — a Public ("Visible to all users") / Private ("Visible to attendees only") radio choice. Footer actions: "Discard Changes", a "Review changes" button (transfer icon), and the primary submit button correctly labeled **"Create Class"** (confirming — see README noise list item 4 — that it's a *different*, not-yet-captured "Add an Event" frame that mislabels its own submit button "Create Class"; this Add-a-New-Class frame's own button text is correct) alongside a second, still-unconfigured "Button CTA" leftover next to it — don't build that second button literally.
 
 ---
 

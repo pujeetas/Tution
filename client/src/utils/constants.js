@@ -77,3 +77,12 @@ export const STUDENT_STATUS_COLORS = {
   Active: 'bg-green-100 text-green-800 dark:bg-green-900/30 dark:text-green-400',
   Inactive: 'bg-gray-100 text-gray-600 dark:bg-gray-800 dark:text-gray-400',
 };
+
+export const LESSON_TYPES = ['Group', 'One-to-One', 'Workshop'];
+
+export const CLASS_DAYS = ['Sun', 'Mon', 'Tue', 'Wed', 'Thu', 'Fri', 'Sat'];
+
+export const CLASS_VISIBILITIES = [
+  { value: 'Public', label: 'Public — Visible to all users' },
+  { value: 'Private', label: 'Private — Visible to attendees only' },
+];

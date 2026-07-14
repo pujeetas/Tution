@@ -1,5 +1,22 @@
 import Student from '../models/Student.js';
 import User from '../models/User.js';
+import Class from '../models/Class.js';
+
+// Scope for creating/updating/deleting a student. Deliberately narrower than
+// listVisibilityScopeFor below — mutation stays limited to whoever actually
+// added the student (or any centre admin), not every staff tutor at the org.
+const scopeFor = (user) =>
+  user.role === 'centre' && user.organization
+    ? { organization: user.organization }
+    : { addedBy: user._id };
+
+// Scope for which students a tutor/centre can see in their list. Students
+// are the centre's shared roster, not a personal one — any tutor who
+// belongs to an organization sees the full org roster, not just students
+// they personally added. A true individual tutor (no organization) still
+// only sees their own.
+const listVisibilityScopeFor = (user) =>
+  user.organization ? { organization: user.organization } : { addedBy: user._id };
 
 // @desc    List own students
 // @route   GET /api/students/me
@@ -21,10 +38,7 @@ export const listAddedStudents = async (req, res, next) => {
   try {
     const { search, level, status, page = 1, limit = 10 } = req.query;
 
-    const scope =
-      req.user.role === 'centre' && req.user.organization
-        ? { organization: req.user.organization }
-        : { addedBy: req.user._id };
+    const scope = listVisibilityScopeFor(req.user);
 
     const filter = { ...scope };
     if (level) filter.level = level;
@@ -46,9 +60,27 @@ export const listAddedStudents = async (req, res, next) => {
       Student.countDocuments(filter),
     ]);
 
+    // Enrollment lives on Class.students (the reverse side of the
+    // relationship), so it has to be looked up separately and attached here
+    // rather than being a field on Student itself.
+    const studentIds = students.map((s) => s._id);
+    const classes = await Class.find({ students: { $in: studentIds }, ...scope }).select('name students');
+    const classNamesByStudent = new Map();
+    for (const c of classes) {
+      for (const sid of c.students) {
+        const key = sid.toString();
+        if (!classNamesByStudent.has(key)) classNamesByStudent.set(key, []);
+        classNamesByStudent.get(key).push(c.name);
+      }
+    }
+    const studentsWithClasses = students.map((s) => ({
+      ...s.toObject(),
+      classes: classNamesByStudent.get(s._id.toString()) || [],
+    }));
+
     res.json({
       success: true,
-      students,
+      students: studentsWithClasses,
       total,
       page: pageNum,
       pages: Math.max(1, Math.ceil(total / limitNum)),
@@ -71,12 +103,7 @@ export const bulkDeleteStudents = async (req, res, next) => {
       throw new Error('ids must be a non-empty array');
     }
 
-    const scope =
-      req.user.role === 'centre' && req.user.organization
-        ? { organization: req.user.organization }
-        : { addedBy: req.user._id };
-
-    const result = await Student.deleteMany({ _id: { $in: ids }, ...scope });
+    const result = await Student.deleteMany({ _id: { $in: ids }, ...scopeFor(req.user) });
     res.json({ success: true, deletedCount: result.deletedCount });
   } catch (error) {
     next(error);
@@ -161,6 +188,47 @@ export const addStudentForParent = async (req, res, next) => {
       parent: { id: parent._id, name: parent.name, email: parent.email },
       createdNewParent,
     });
+  } catch (error) {
+    next(error);
+  }
+};
+
+// @desc    Update a student this tutor/centre added (org-scoped for centres).
+//          Only student-detail fields — editing here doesn't touch or
+//          relink the parent account, unlike addStudentForParent.
+// @route   PATCH /api/students/added/:id
+// @access  Private (tutor, centre)
+export const updateAddedStudent = async (req, res, next) => {
+  try {
+    const { studentName, level, dob, phone, gender, email, homeAddress, postalCode, schoolName } = req.body;
+
+    if (!studentName || !level) {
+      res.status(400);
+      throw new Error("Student's name and level are required");
+    }
+
+    const student = await Student.findOneAndUpdate(
+      { _id: req.params.id, ...scopeFor(req.user) },
+      {
+        name: studentName,
+        level,
+        dob: dob || undefined,
+        phone: phone || '',
+        gender: gender || '',
+        email: email || '',
+        homeAddress: homeAddress || '',
+        postalCode: postalCode || '',
+        schoolName: schoolName || '',
+      },
+      { new: true, runValidators: true }
+    );
+
+    if (!student) {
+      res.status(404);
+      throw new Error('Student not found');
+    }
+
+    res.json({ success: true, student });
   } catch (error) {
     next(error);
   }

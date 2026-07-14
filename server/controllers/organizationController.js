@@ -53,6 +53,42 @@ export const listStaff = async (req, res, next) => {
   }
 };
 
+// @desc    Bulk-remove staff tutors from this organization — deletes both the
+//          TutorProfile and the underlying User login account. `ids` are
+//          TutorProfile ids (what the staff list/table key on), not user ids.
+//          Classes/Bookings that already reference the removed tutor keep
+//          their stored id as a dangling reference rather than being
+//          rewritten, matching the same tolerance already used for deleted
+//          Students elsewhere in the app.
+// @route   POST /api/organizations/staff/bulk-delete
+// @access  Private (centre)
+export const bulkDeleteStaff = async (req, res, next) => {
+  try {
+    const { ids } = req.body;
+
+    if (!Array.isArray(ids) || ids.length === 0) {
+      res.status(400);
+      throw new Error('ids must be a non-empty array');
+    }
+
+    const profiles = await TutorProfile.find({
+      _id: { $in: ids },
+      organization: req.user.organization,
+    });
+
+    await TutorProfile.deleteMany({ _id: { $in: profiles.map((p) => p._id) } });
+    const result = await User.deleteMany({
+      _id: { $in: profiles.map((p) => p.user) },
+      role: 'tutor',
+      organization: req.user.organization,
+    });
+
+    res.json({ success: true, deletedCount: result.deletedCount });
+  } catch (error) {
+    next(error);
+  }
+};
+
 // @desc    Create a staff tutor account under this organization
 // @route   POST /api/organizations/staff
 // @access  Private (centre)

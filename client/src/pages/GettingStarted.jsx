@@ -5,6 +5,8 @@ import Button from '../components/common/Button.jsx';
 import FieldSection from '../components/onboarding/FieldSection.jsx';
 import AddedStudentsPanel from '../components/students/AddedStudentsPanel.jsx';
 import AddAdminsStep from '../components/onboarding/AddAdminsStep.jsx';
+import AddStaffTutorsStep from '../components/onboarding/AddStaffTutorsStep.jsx';
+import AddClassesStep from '../components/onboarding/AddClassesStep.jsx';
 import { completeOnboarding, saveFormConfig, getErrorMessage } from '../services/api.js';
 import { getDashboardPath } from '../utils/constants.js';
 import { buildDefaultFormConfig } from '../utils/formTemplates.js';
@@ -46,8 +48,10 @@ const GettingStarted = () => {
   const saved = loadSavedProgress(user.id);
 
   // Which checklist item is active, and which have been completed this session
-  const [step, setStep] = useState(saved?.step || 'forms'); // 'forms' | 'addUsers'
-  const [completed, setCompleted] = useState(saved?.completed || { forms: false, addUsers: false });
+  const [step, setStep] = useState(saved?.step || 'forms'); // 'forms' | 'addUsers' | 'classes'
+  const [completed, setCompleted] = useState(
+    saved?.completed || { forms: false, addUsers: false, classes: false }
+  );
 
   // Step 1: which forms this account uses at all
   const [adminForm, setAdminForm] = useState(saved?.adminForm ?? isCentre);
@@ -62,7 +66,7 @@ const GettingStarted = () => {
   const [activeType, setActiveType] = useState('student');
 
   // Step 2 sub-flow: Add Users
-  const [addUsersView, setAddUsersView] = useState(saved?.addUsersView || 'intro'); // 'intro' | 'students' | 'admins'
+  const [addUsersView, setAddUsersView] = useState(saved?.addUsersView || 'intro'); // 'intro' | 'students' | 'staff' | 'admins'
 
   const [error, setError] = useState('');
   const [submitting, setSubmitting] = useState(false);
@@ -139,6 +143,11 @@ const GettingStarted = () => {
 
   const finishAddUsers = () => {
     setCompleted((prev) => ({ ...prev, addUsers: true }));
+    setStep('classes');
+  };
+
+  const finishClasses = () => {
+    setCompleted((prev) => ({ ...prev, classes: true }));
     finish();
   };
 
@@ -168,7 +177,7 @@ const GettingStarted = () => {
           </div>
           <ul>
             {CHECKLIST.map((item) => {
-              const isReal = item.key === 'forms' || item.key === 'addUsers';
+              const isReal = ['forms', 'addUsers', 'classes'].includes(item.key);
               const isActive = item.key === step;
               const isDone = completed[item.key];
               return (
@@ -384,8 +393,9 @@ const GettingStarted = () => {
             <>
               <h2 className="font-semibold text-gray-900 dark:text-gray-100">Add Users</h2>
               <p className="mt-1.5 text-sm text-gray-500 dark:text-gray-400">
-                Add profiles for your{isCentre && adminForm ? ' students and admins' : ' students'}.
-                Populate the necessary details to ensure proper record-keeping and communication.
+                Add profiles for your{isCentre ? ' students, staff tutors' : ' students'}
+                {isCentre && adminForm ? ' and admins' : ''}. Populate the necessary details to
+                ensure proper record-keeping and communication.
               </p>
 
               <div className="mt-4 grid gap-3 sm:grid-cols-2">
@@ -399,6 +409,18 @@ const GettingStarted = () => {
                     Add student profiles and their parent accounts.
                   </p>
                 </button>
+                {isCentre && (
+                  <button
+                    type="button"
+                    onClick={() => setAddUsersView('staff')}
+                    className="rounded-lg border border-gray-200 p-4 text-left transition-colors hover:border-primary-400 dark:border-gray-700 dark:hover:border-primary-500"
+                  >
+                    <p className="font-semibold text-gray-900 dark:text-gray-100">Add Staff Tutors</p>
+                    <p className="text-sm text-gray-500 dark:text-gray-400">
+                      Add tutors to your team so you can assign them to classes.
+                    </p>
+                  </button>
+                )}
                 {isCentre && adminForm && (
                   <button
                     type="button"
@@ -438,7 +460,25 @@ const GettingStarted = () => {
                   Back
                 </button>
                 <Button className="ml-auto" onClick={finishAddUsers} disabled={submitting}>
-                  {submitting ? 'Saving...' : 'Go to Dashboard'}
+                  {submitting ? 'Saving...' : 'Continue'}
+                </Button>
+              </div>
+            </>
+          )}
+
+          {step === 'addUsers' && addUsersView === 'staff' && (
+            <>
+              <AddStaffTutorsStep />
+              <div className="mt-6 flex flex-wrap items-center gap-3">
+                <button
+                  type="button"
+                  onClick={() => setAddUsersView('intro')}
+                  className="text-sm font-medium text-gray-500 hover:text-gray-700 dark:text-gray-400 dark:hover:text-gray-200"
+                >
+                  Back
+                </button>
+                <Button className="ml-auto" onClick={finishAddUsers} disabled={submitting}>
+                  {submitting ? 'Saving...' : 'Continue'}
                 </Button>
               </div>
             </>
@@ -456,6 +496,24 @@ const GettingStarted = () => {
                   Back
                 </button>
                 <Button className="ml-auto" onClick={finishAddUsers} disabled={submitting}>
+                  {submitting ? 'Saving...' : 'Continue'}
+                </Button>
+              </div>
+            </>
+          )}
+
+          {step === 'classes' && (
+            <>
+              <h2 className="font-semibold text-gray-900 dark:text-gray-100">Create Classes</h2>
+              <p className="mt-1.5 text-sm text-gray-500 dark:text-gray-400">
+                Set up your first class — assign tutors and students, and set a weekly schedule.
+                You can always add more later from the sidebar.
+              </p>
+              <div className="mt-4">
+                <AddClassesStep />
+              </div>
+              <div className="mt-6 flex flex-wrap items-center gap-3">
+                <Button className="ml-auto" onClick={finishClasses} disabled={submitting}>
                   {submitting ? 'Saving...' : 'Go to Dashboard'}
                 </Button>
               </div>
